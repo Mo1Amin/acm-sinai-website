@@ -1,0 +1,189 @@
+<%- include('partials/header') %>
+<%
+  const s = settings;
+  const registrationOpen = s.registration_open === '1' && s.registration_url;
+  const avatar = (p, size) => p.photo
+    ? `<img src="${esc(asset(p.photo))}" alt="${esc(p.name)}" loading="lazy" width="160" height="160" class="${size} rounded-full object-cover">`
+    : `<div role="img" aria-label="${esc(p.name)}" class="${size} rounded-full grid place-items-center avatar-initials font-black">${esc(initials(p.name))}</div>`;
+%>
+<main class="pt-20">
+
+    <!-- HERO -->
+    <section class="min-h-[88vh] md:min-h-screen flex items-center relative overflow-hidden" data-section="hero">
+        <div class="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+            <div class="z-10 animate-fade-in-up text-center md:text-left mt-10 md:mt-0">
+                <span class="text-brand font-tech tracking-[0.2em] text-sm font-bold uppercase mb-3 block"><%= s.hero_kicker %></span>
+                <h1 class="hover-heading text-5xl md:text-8xl font-black text-ink mb-6 leading-tight">
+                    <%= s.hero_line1 || 'Build The' %><br>
+                    <span class="text-gradient"><%= s.hero_line2 || 'Future' %></span>
+                </h1>
+                <p class="text-lg md:text-xl text-ink-soft mb-10 max-w-lg leading-relaxed mx-auto md:mx-0 font-medium"><%= s.hero_text %></p>
+                <div class="flex flex-wrap gap-3 justify-center md:justify-start">
+                    <a href="#join" data-click="hero-join" class="btn-primary px-10 text-lg">Join Chapter</a>
+                    <a href="#tracks" data-click="hero-tracks" class="btn-outline px-8 text-lg">Explore Tracks</a>
+                </div>
+            </div>
+            <div class="flex justify-center animate-float z-0">
+                <div class="relative w-64 h-64 md:w-[480px] md:h-[480px]">
+                    <div class="absolute inset-0 hero-glow rounded-full blur-3xl opacity-30 animate-pulse"></div>
+                    <img src="/assets/img/logo.webp" alt="" width="480" height="480" class="w-full h-full object-contain drop-shadow-2xl relative z-10 animate-logo-live">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="py-24 md:py-28 relative" data-section="about">
+        <div class="container mx-auto px-6 grid md:grid-cols-2 gap-14 items-center">
+            <div>
+                <p class="section-kicker">Who we are</p>
+                <h2 class="text-4xl md:text-5xl font-black text-ink">A community that builds.</h2>
+                <p class="mt-6 text-lg md:text-xl text-ink-soft leading-relaxed"><%= s.about_text %></p>
+            </div>
+            <div class="grid grid-cols-2 gap-4 md:gap-5">
+                <div class="glass-card rounded-3xl p-6 md:p-8"><div class="stat-number">1947</div><div class="stat-label">ACM founded</div></div>
+                <div class="glass-card rounded-3xl p-6 md:p-8"><div class="stat-number">~100K</div><div class="stat-label">members worldwide</div></div>
+                <div class="glass-card rounded-3xl p-6 md:p-8 col-span-2 flex items-center gap-5">
+                    <div class="icon-tile w-14 h-14 text-2xl shrink-0"><i class="fas fa-trophy"></i></div>
+                    <div><div class="text-xl md:text-2xl font-black text-ink">A.M. Turing Award</div><div class="text-ink-muted font-medium">ACM's award, known as the "Nobel Prize of Computing"</div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRACKS -->
+    <section id="tracks" class="py-24 md:py-28 relative" data-section="tracks">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-14">
+                <h2 class="hover-heading text-4xl md:text-5xl font-black mb-4 text-ink">Our Tracks</h2>
+                <div class="w-24 h-1.5 bg-brand mx-auto rounded-full"></div>
+                <p class="mt-6 text-lg text-ink-muted font-medium max-w-2xl mx-auto">Specialized teams in every computing field, each guided by experienced mentors.</p>
+            </div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <% tracks.forEach((t) => { const st = trackStatus(t.status); %>
+                    <a href="/tracks/<%= t.slug %>" data-click="track:<%= t.slug %>" class="glass-card card-hover rounded-3xl p-5 md:p-8 flex flex-col">
+                        <div class="icon-tile w-12 h-12 md:w-16 md:h-16 text-xl md:text-3xl mb-4 md:mb-6"><i class="fas <%= t.icon %>"></i></div>
+                        <h3 class="text-base md:text-xl font-bold text-ink leading-tight"><%= t.name %></h3>
+                        <p class="hidden sm:block mt-2 text-ink-muted text-sm font-medium"><%= t.short_desc %></p>
+                        <span class="status-badge status-<%= st.key %> mt-4 self-start"><span class="dot"></span><%= st.label %></span>
+                    </a>
+                <% }) %>
+            </div>
+        </div>
+    </section>
+
+    <!-- EVENTS -->
+    <section id="events" class="py-24 md:py-28 section-tint" data-section="events">
+        <div class="container mx-auto px-6">
+            <% if (events.upcoming.length) { %>
+                <div class="mb-20">
+                    <p class="section-kicker text-center">Don't miss it</p>
+                    <h2 class="section-title">Upcoming Events</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+                        <% events.upcoming.forEach((ev) => { %><%- include('partials/event-card', { ev, upcoming: true }) %><% }) %>
+                    </div>
+                </div>
+            <% } %>
+            <p class="section-kicker text-center">What we have done</p>
+            <h2 class="section-title">Past Events</h2>
+            <% if (events.past.length) { %>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+                    <% events.past.forEach((ev) => { %><%- include('partials/event-card', { ev, upcoming: false }) %><% }) %>
+                </div>
+            <% } else { %>
+                <p class="text-center text-ink-muted mt-8">Events will appear here soon.</p>
+            <% } %>
+        </div>
+    </section>
+
+    <!-- GALLERY -->
+    <% if (albums.length) { %>
+    <section id="gallery" class="py-24 md:py-28" data-section="gallery">
+        <div class="container mx-auto px-6">
+            <p class="section-kicker text-center">Moments</p>
+            <h2 class="section-title">Gallery</h2>
+            <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+                <% albums.forEach((a, i) => { %>
+                    <button type="button" data-album="<%= i %>" class="album-card text-left glass-card card-hover rounded-[2rem] overflow-hidden group">
+                        <div class="relative aspect-[4/3] overflow-hidden bg-surface-2">
+                            <img src="<%= a.cover %>" alt="<%= a.title %>" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent"></div>
+                            <div class="absolute bottom-4 left-4 flex items-center gap-2 text-white text-sm font-bold bg-slate-900/60 backdrop-blur px-3 py-1.5 rounded-lg"><i class="fas fa-images"></i> <%= a.photos.length %> photos</div>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-ink"><%= a.title %></h3>
+                            <p class="text-sm font-medium text-ink-muted mt-1"><%= a.date_label %></p>
+                        </div>
+                    </button>
+                <% }) %>
+            </div>
+            <script type="application/json" id="gallery-data"><%- JSON.stringify(albums.map((a) => ({ title: a.title, photos: a.photos }))).replace(/</g, '\\u003c') %></script>
+        </div>
+    </section>
+    <% } %>
+
+    <!-- TEAM -->
+    <section id="team" class="py-24 md:py-28 section-tint" data-section="team">
+        <div class="container mx-auto px-6 text-center">
+            <p class="section-kicker">The people behind it</p>
+            <h2 class="section-title">Leadership Team</h2>
+
+            <% if (founders.length) { %>
+            <h3 class="mt-16 mb-10 text-xl font-tech text-brand tracking-[0.3em] font-bold uppercase">High Board</h3>
+            <div class="flex flex-wrap justify-center gap-8 md:gap-16">
+                <% founders.forEach((p) => { %>
+                    <div class="group w-40 md:w-48">
+                        <div class="w-32 h-32 md:w-40 md:h-40 rounded-full p-1.5 avatar-ring mx-auto mb-4 overflow-hidden"><%- avatar(p, 'w-full h-full group-hover:scale-110 transition-transform duration-500 text-3xl') %></div>
+                        <h4 class="text-lg md:text-2xl font-bold text-ink"><%= p.name %></h4>
+                        <p class="text-xs md:text-sm text-brand font-extrabold uppercase tracking-wider mt-1"><%= p.role %></p>
+                    </div>
+                <% }) %>
+            </div>
+            <% } %>
+
+            <% sponsors.forEach((p) => { %>
+                <div class="mt-12 inline-flex items-center gap-5 glass-card rounded-3xl px-6 py-4 text-left">
+                    <%- avatar(p, 'w-16 h-16 md:w-20 md:h-20 text-xl') %>
+                    <div><h4 class="font-bold text-ink text-base md:text-xl"><%= p.name %></h4><p class="text-[11px] md:text-sm text-brand font-extrabold uppercase tracking-wider mt-1"><%= p.role %></p></div>
+                </div>
+            <% }) %>
+
+            <% if (board.length) { %>
+            <h3 class="mt-20 mb-10 text-lg font-tech text-ink-muted tracking-widest uppercase">Current Board</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto">
+                <% board.forEach((p) => { %>
+                    <div class="glass-card card-hover rounded-3xl p-5 md:p-6">
+                        <div class="mb-4"><%- avatar(p, 'w-16 h-16 md:w-24 md:h-24 mx-auto text-xl md:text-2xl') %></div>
+                        <h4 class="font-bold text-ink text-sm md:text-lg"><%= p.name %></h4>
+                        <p class="text-[11px] md:text-xs text-ink-muted font-bold uppercase mt-1"><%= p.role %></p>
+                    </div>
+                <% }) %>
+            </div>
+            <% } %>
+        </div>
+    </section>
+
+    <!-- JOIN -->
+    <section id="join" class="py-24 md:py-28" data-section="join">
+        <div class="container mx-auto px-6">
+            <div class="join-panel rounded-[2.5rem] p-8 md:p-14 grid md:grid-cols-2 gap-10 items-center max-w-5xl mx-auto">
+                <div>
+                    <p class="section-kicker !text-cyan-200">Membership</p>
+                    <h2 class="text-3xl md:text-5xl font-black text-white leading-tight">Your seat in ACM Sinai is waiting.</h2>
+                    <p class="mt-4 text-slate-200 text-lg">Symbolic membership fee · Open to computing students.</p>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <% if (registrationOpen) { %>
+                        <a href="<%= s.registration_url %>" target="_blank" rel="noopener" data-click="join-register" class="btn-light text-lg"><i class="fas fa-pen-to-square"></i> Register Now</a>
+                    <% } else { %>
+                        <div class="btn-light opacity-80 cursor-default text-lg"><i class="fas fa-bell"></i> Registration opens soon</div>
+                    <% } %>
+                    <% if (s.whatsapp_url) { %>
+                        <a href="<%= s.whatsapp_url %>" target="_blank" rel="noopener" data-click="join-whatsapp" class="btn-ghost-light text-lg"><i class="fab fa-whatsapp"></i> WhatsApp Updates</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+<%- include('partials/footer') %>

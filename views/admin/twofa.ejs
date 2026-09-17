@@ -1,0 +1,24 @@
+<%- include('partials/head') %>
+<body class="admin-body min-h-screen">
+<main class="min-h-screen grid place-items-center px-4 py-10">
+    <div class="w-full max-w-md">
+        <div class="flex items-center justify-center gap-3 mb-8">
+            <img src="/assets/img/logo.webp" alt="" class="w-12 h-12">
+            <div><div class="font-black text-xl text-ink leading-none">ACM Sinai</div><div class="text-sm text-ink-muted">Admin dashboard</div></div>
+        </div>
+        <div class="admin-card !p-7">
+            <div class="w-12 h-12 rounded-2xl icon-tile text-xl mb-4"><i class="fas fa-shield-halved"></i></div>
+            <h1 class="text-2xl font-black text-ink">Two-step verification</h1>
+            <p class="text-ink-muted mt-1 mb-6">Enter the 6-digit code from your authenticator app, or one of your recovery codes.</p>
+            <% if (error) { %><div class="mb-5 rounded-xl px-4 py-3 text-sm font-semibold bg-rose-500/10 text-rose-700 dark:text-rose-300" role="alert"><%= error %></div><% } %>
+            <form method="post" action="/admin/2fa" class="flex flex-col gap-4">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input class="admin-input text-center text-2xl tracking-[0.4em] font-bold" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="20" required autofocus placeholder="000000" aria-label="Verification code">
+                <button class="admin-btn w-full py-3">Verify</button>
+            </form>
+        </div>
+    </div>
+</main>
+<script src="/assets/js/admin.js?v=<%= version %>" defer></script>
+</body>
+</html>

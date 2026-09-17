@@ -1,0 +1,58 @@
+<%- include('partials/top') %>
+<% const t = track; %>
+<a href="/admin/tracks" class="inline-flex items-center gap-2 text-ink-muted hover:text-brand font-semibold mb-4"><i class="fas fa-arrow-left"></i> Tracks</a>
+<form method="post" action="/admin/tracks/<%= t.id || 'new' %>" enctype="multipart/form-data" class="grid lg:grid-cols-3 gap-4">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="lg:col-span-2 flex flex-col gap-4">
+        <div class="admin-card grid sm:grid-cols-2 gap-4">
+            <div><label class="admin-label" for="name">Name</label><input class="admin-input" id="name" name="name" required maxlength="120" value="<%= t.name || '' %>"></div>
+            <div><label class="admin-label" for="slug">URL name</label><input class="admin-input" id="slug" name="slug" maxlength="80" value="<%= t.slug || '' %>" placeholder="auto from name"><p class="admin-help">Letters, numbers and dashes. The page will be /tracks/<b>url-name</b>.</p></div>
+            <div class="sm:col-span-2"><label class="admin-label" for="short_desc">Short description</label><input class="admin-input" id="short_desc" name="short_desc" maxlength="200" value="<%= t.short_desc || '' %>"><p class="admin-help">Shown on the home page card.</p></div>
+            <div class="sm:col-span-2"><label class="admin-label" for="description">About this track</label><textarea class="admin-input min-h-[110px]" id="description" name="description" maxlength="3000"><%= t.description || '' %></textarea></div>
+        </div>
+        <div class="admin-card grid sm:grid-cols-2 gap-4">
+            <div><label class="admin-label" for="skills">What you will learn</label><textarea class="admin-input min-h-[170px]" id="skills" name="skills" maxlength="3000"><%= t.skills || '' %></textarea><p class="admin-help">One item per line.</p></div>
+            <div><label class="admin-label" for="roadmap">Roadmap</label><textarea class="admin-input min-h-[170px]" id="roadmap" name="roadmap" maxlength="3000"><%= t.roadmap || '' %></textarea><p class="admin-help">One step per line, in order.</p></div>
+        </div>
+        <fieldset class="admin-card">
+            <legend class="admin-label">Icon</legend>
+            <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-2">
+                <% icons.forEach((ic) => { %>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="icon" value="<%= ic %>" class="peer sr-only" <%= (t.icon || 'fa-code') === ic ? 'checked' : '' %>>
+                        <span class="w-11 h-11 grid place-items-center rounded-xl border text-lg text-ink peer-checked:bg-brand peer-checked:text-white peer-focus-visible:ring-2 ring-brand" style="border-color: rgb(var(--line) / .12)"><i class="fas <%= ic %>"></i></span>
+                    </label>
+                <% }) %>
+            </div>
+        </fieldset>
+    </div>
+    <div class="flex flex-col gap-4">
+        <div class="admin-card flex flex-col gap-4">
+            <div>
+                <label class="admin-label" for="status">Registration</label>
+                <select class="admin-input" id="status" name="status">
+                    <% [['open', 'Open'], ['soon', 'Coming soon'], ['closed', 'Closed']].forEach(([k, l]) => { %>
+                        <option value="<%= k %>" <%= (t.status || 'soon') === k ? 'selected' : '' %>><%= l %></option>
+                    <% }) %>
+                </select>
+            </div>
+            <div><label class="admin-label" for="join_url">Join link</label><input class="admin-input" id="join_url" name="join_url" type="url" maxlength="500" value="<%= t.join_url || '' %>" placeholder="https://forms.gle/..."><p class="admin-help">The "Join now" button shows only while registration is open.</p></div>
+            <label class="flex items-center gap-3 font-semibold text-ink"><input type="checkbox" name="is_visible" value="1" class="w-5 h-5" <%= (t.is_visible === undefined || t.is_visible) ? 'checked' : '' %>> Visible on the site</label>
+        </div>
+        <div class="admin-card flex flex-col gap-4">
+            <h2 class="font-bold text-ink">Mentor</h2>
+            <div><label class="admin-label" for="mentor_name">Name</label><input class="admin-input" id="mentor_name" name="mentor_name" maxlength="120" value="<%= t.mentor_name || '' %>"></div>
+            <div><label class="admin-label" for="mentor_title">Title</label><input class="admin-input" id="mentor_title" name="mentor_title" maxlength="160" value="<%= t.mentor_title || '' %>" placeholder="Senior Engineer at ..."></div>
+            <div>
+                <label class="admin-label" for="mentor_photo">Photo</label>
+                <% if (t.mentor_photo) { %>
+                    <div class="flex items-center gap-3 mb-2"><img src="<%= asset(t.mentor_photo) %>" alt="" class="w-14 h-14 rounded-full object-cover"><label class="text-sm text-ink-muted flex items-center gap-2"><input type="checkbox" name="remove_mentor_photo" value="1"> Remove</label></div>
+                <% } %>
+                <input class="admin-input" id="mentor_photo" name="mentor_photo" type="file" accept="image/jpeg,image/png,image/webp">
+                <p class="admin-help">Cropped square and resized automatically.</p>
+            </div>
+        </div>
+        <button class="admin-btn py-3"><i class="fas fa-check"></i> Save track</button>
+    </div>
+</form>
+<%- include('partials/bottom') %>

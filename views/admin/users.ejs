@@ -1,0 +1,66 @@
+<%- include('partials/top') %>
+<% const d = locals.draft || {}; %>
+<div class="grid lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2 admin-card !p-0 overflow-x-auto">
+        <table class="admin-table min-w-[680px]">
+            <thead><tr><th>Person</th><th>Role</th><th>Security</th><th class="text-right">Actions</th></tr></thead>
+            <tbody>
+            <% users.forEach((u) => { const action = `/admin/users/${u.id}/action`; const me = u.id === user.id; %>
+                <tr class="<%= u.is_active ? '' : 'opacity-60' %>">
+                    <td>
+                        <div class="font-bold"><%= u.name %> <% if (me) { %><span class="admin-pill bg-brand/10 text-brand">You</span><% } %></div>
+                        <div class="text-xs text-ink-muted"><%= u.email %></div>
+                        <div class="text-xs text-ink-muted">Last sign-in: <%= u.last_login_at ? timeAgo(u.last_login_at) : 'never' %></div>
+                    </td>
+                    <td>
+                        <form method="post" action="<%= action %>">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="action" value="role">
+                            <select name="role" class="admin-input !py-1.5 !w-auto text-sm" data-autosubmit aria-label="Role for <%= u.name %>">
+                                <% Object.entries(ROLE_LABELS).forEach(([k, l]) => { %><option value="<%= k %>" <%= u.role === k ? 'selected' : '' %>><%= l %></option><% }) %>
+                            </select>
+                        </form>
+                    </td>
+                    <td class="text-xs">
+                        <div><i class="fas <%= u.totp_enabled ? 'fa-circle-check text-emerald-500' : 'fa-circle-xmark text-amber-500' %>"></i> 2-step <%= u.totp_enabled ? 'on' : 'off' %></div>
+                        <% if (u.locked_until && new Date(u.locked_until.replace(' ', 'T')) > new Date()) { %><div class="text-rose-600"><i class="fas fa-lock"></i> Locked</div><% } %>
+                        <% if (!u.is_active) { %><div class="text-slate-500"><i class="fas fa-ban"></i> Disabled</div><% } %>
+                    </td>
+                    <td>
+                        <div class="flex justify-end gap-1 flex-wrap">
+                            <% if (u.locked_until) { %><form method="post" action="<%= action %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="action" value="unlock" class="admin-btn-ghost !py-1.5 !px-2.5 text-xs">Unlock</button></form><% } %>
+                            <% if (u.totp_enabled && !me) { %><form method="post" action="<%= action %>" data-confirm="Reset two-step verification for <%= u.name %>?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="action" value="reset2fa" class="admin-btn-ghost !py-1.5 !px-2.5 text-xs">Reset 2-step</button></form><% } %>
+                            <% if (!me) { %>
+                                <form method="post" action="<%= action %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="action" value="toggle" class="admin-btn-ghost !py-1.5 !px-2.5 text-xs"><%= u.is_active ? 'Disable' : 'Enable' %></button></form>
+                                <form method="post" action="<%= action %>" data-confirm="Delete the account of <%= u.name %>? They will be signed out."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="action" value="delete" class="w-8 h-8 rounded-lg hover:bg-rose-500/10 text-rose-600" aria-label="Delete account"><i class="fas fa-trash"></i></button></form>
+                            <% } %>
+                        </div>
+                    </td>
+                </tr>
+            <% }) %>
+            </tbody>
+        </table>
+    </div>
+    <div class="flex flex-col gap-4">
+        <form method="post" action="/admin/users" class="admin-card flex flex-col gap-3">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <h2 class="font-bold text-ink">Add an admin</h2>
+            <div><label class="admin-label" for="u-name">Name</label><input class="admin-input" id="u-name" name="name" required maxlength="120" value="<%= d.name || '' %>"></div>
+            <div><label class="admin-label" for="u-email">Email</label><input class="admin-input" id="u-email" name="email" type="email" required maxlength="190" value="<%= d.email || '' %>"></div>
+            <div>
+                <label class="admin-label" for="u-role">Role</label>
+                <select class="admin-input" id="u-role" name="role"><% Object.entries(ROLE_LABELS).forEach(([k, l]) => { %><option value="<%= k %>" <%= (d.role || 'editor') === k ? 'selected' : '' %>><%= l %></option><% }) %></select>
+            </div>
+            <div><label class="admin-label" for="u-password">Temporary password</label><input class="admin-input" id="u-password" name="password" type="password" required minlength="12" autocomplete="new-password"><p class="admin-help">At least 12 characters with letters and numbers. Share it privately.</p></div>
+            <button class="admin-btn"><i class="fas fa-user-plus"></i> Create account</button>
+        </form>
+        <div class="admin-card text-sm">
+            <h2 class="font-bold text-ink mb-2">What each role can do</h2>
+            <ul class="flex flex-col gap-2 text-ink-soft">
+                <li><b class="text-ink">Owner (Founder):</b> everything, including admins and logs.</li>
+                <li><b class="text-ink">Admin:</b> content, team, settings, analytics and logs. Cannot manage admins.</li>
+                <li><b class="text-ink">Editor:</b> events and gallery only.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<%- include('partials/bottom') %>

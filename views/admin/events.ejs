@@ -1,0 +1,36 @@
+<%- include('partials/top') %>
+<% const now = nowSql(); %>
+<div class="flex flex-wrap items-center gap-3 mb-5">
+    <p class="text-ink-muted">Events move from "Upcoming" to "Past" automatically when their date passes.</p>
+    <a href="/admin/events/new" class="admin-btn ml-auto"><i class="fas fa-plus"></i> New event</a>
+</div>
+<div class="admin-card !p-0 overflow-x-auto">
+    <table class="admin-table min-w-[720px]">
+        <thead><tr><th>Event</th><th>Date</th><th>Status</th><th class="text-right">Actions</th></tr></thead>
+        <tbody>
+        <% events.forEach((ev) => { const upcoming = ev.starts_at >= now; %>
+            <tr>
+                <td>
+                    <div class="flex items-center gap-3">
+                        <% if (ev.image) { %><img src="<%= asset(ev.image) %>" alt="" class="w-16 h-10 rounded-lg object-cover object-top shrink-0"><% } else { %><div class="w-16 h-10 rounded-lg bg-surface-2 grid place-items-center text-ink-muted shrink-0"><i class="fas fa-image"></i></div><% } %>
+                        <div class="font-bold"><%= ev.title %></div>
+                    </div>
+                </td>
+                <td class="whitespace-nowrap"><%= formatDateTime(ev.starts_at) %></td>
+                <td>
+                    <span class="admin-pill <%= upcoming ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300' : 'bg-slate-500/10 text-slate-500' %>"><%= upcoming ? 'Upcoming' : 'Past' %></span>
+                    <% if (!ev.is_visible) { %><span class="admin-pill bg-slate-500/10 text-slate-500 ml-1"><i class="fas fa-eye-slash"></i> Hidden</span><% } %>
+                </td>
+                <td>
+                    <div class="flex justify-end gap-2">
+                        <a class="admin-btn-ghost" href="/admin/events/<%= ev.id %>"><i class="fas fa-pen"></i> Edit</a>
+                        <form method="post" action="/admin/events/<%= ev.id %>/delete" data-confirm="Delete &quot;<%= ev.title %>&quot;?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="admin-btn-ghost !px-3 text-rose-600" aria-label="Delete"><i class="fas fa-trash"></i></button></form>
+                    </div>
+                </td>
+            </tr>
+        <% }) %>
+        <% if (!events.length) { %><tr><td colspan="4" class="text-center text-ink-muted py-10">No events yet.</td></tr><% } %>
+        </tbody>
+    </table>
+</div>
+<%- include('partials/bottom') %>

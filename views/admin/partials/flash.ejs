@@ -1,0 +1,11 @@
+<% if (locals.flash) {
+  const cls = flash.type === 'ok' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+    : flash.type === 'error' ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
+    : 'bg-amber-500/10 text-amber-700 dark:text-amber-300'; %>
+    <div class="mb-6 rounded-xl px-4 py-3 font-semibold <%= cls %>" role="status"><%= flash.msg %></div>
+<% } %>
+<% if (locals.errors && errors.length) { %>
+    <div class="mb-6 rounded-xl px-4 py-3 font-semibold bg-rose-500/10 text-rose-700 dark:text-rose-300" role="alert">
+        <% errors.forEach((er) => { %><div><%= er %></div><% }) %>
+    </div>
+<% } %>

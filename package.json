@@ -1,10 +1,35 @@
 {
   "name": "acm-sinai-website",
+  "version": "2.0.0",
   "private": true,
-  "description": "Website of the Sinai University ACM Student Chapter (su.acm.org)",
+  "description": "Website and admin dashboard of the Sinai University ACM Student Chapter (su.acm.org)",
+  "main": "app.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "build": "tailwindcss -i src/input.css -o site/css/style.css --minify",
-    "watch": "tailwindcss -i src/input.css -o site/css/style.css --watch"
+    "start": "node app.js",
+    "dev": "node --watch app.js",
+    "build:css": "tailwindcss -i styles/input.css -o public/assets/css/app.css --minify",
+    "watch:css": "tailwindcss -i styles/input.css -o public/assets/css/app.css --watch",
+    "migrate": "node src/cli/migrate.js",
+    "create-owner": "node src/cli/create-owner.js"
+  },
+  "dependencies": {
+    "@node-rs/argon2": "^2.0.2",
+    "compression": "^1.7.5",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-mysql-session": "^3.0.3",
+    "express-rate-limit": "^7.5.0",
+    "express-session": "^1.18.1",
+    "helmet": "^8.0.0",
+    "multer": "^2.0.0",
+    "mysql2": "^3.12.0",
+    "otplib": "^12.0.1",
+    "qrcode": "^1.5.4",
+    "sharp": "^0.33.5"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.19"

@@ -1,0 +1,72 @@
+<%- include('partials/top') %>
+<div class="grid lg:grid-cols-2 gap-4">
+    <section class="admin-card" id="twofa">
+        <h2 class="font-bold text-ink text-lg">Two-step verification</h2>
+        <% if (user.totp_enabled) { %>
+            <p class="mt-2 flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-semibold"><i class="fas fa-circle-check"></i> On. You'll enter a code from your phone at every sign-in.</p>
+            <p class="text-sm text-ink-muted mt-2"><%= recoveryLeft %> recovery code(s) left.</p>
+            <div class="flex flex-wrap gap-2 mt-4">
+                <form method="post" action="/admin/account/2fa/recovery" data-confirm="Create new recovery codes? The old ones will stop working."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="admin-btn-ghost"><i class="fas fa-rotate"></i> New recovery codes</button></form>
+            </div>
+            <% if (!['owner', 'admin'].includes(user.role)) { %>
+                <form method="post" action="/admin/account/2fa/disable" class="mt-5 flex gap-2 items-end">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <div class="flex-1"><label class="admin-label" for="dis-pw">Turn off (enter your password)</label><input class="admin-input" id="dis-pw" name="password" type="password" required autocomplete="current-password"></div>
+                    <button class="admin-btn-danger">Turn off</button>
+                </form>
+            <% } %>
+        <% } else { %>
+            <p class="mt-2 text-ink-soft">Protect your account with a code from an authenticator app (Google Authenticator, Microsoft Authenticator or Authy).</p>
+            <ol class="mt-4 flex flex-col gap-4 text-sm text-ink">
+                <li><b>1.</b> Scan this QR code with the app:
+                    <div class="mt-3 flex flex-wrap items-center gap-4">
+                        <img src="<%= setup.qr %>" alt="QR code for your authenticator app" class="w-44 h-44 rounded-xl bg-white p-2">
+                        <div class="text-xs text-ink-muted">Can't scan? Enter this key manually:<div class="font-mono text-sm text-ink mt-1 break-all select-all"><%= setup.secret %></div></div>
+                    </div>
+                </li>
+                <li><b>2.</b> Enter the 6-digit code the app shows:
+                    <form method="post" action="/admin/account/2fa/enable" class="mt-2 flex gap-2">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <input class="admin-input text-center tracking-[0.3em] font-bold !w-40" name="code" inputmode="numeric" maxlength="6" required placeholder="000000" autocomplete="one-time-code" aria-label="6-digit code">
+                        <button class="admin-btn">Turn on</button>
+                    </form>
+                </li>
+            </ol>
+        <% } %>
+        <% if (codes) { %>
+            <div id="recovery" class="mt-6 rounded-2xl p-5 bg-amber-500/10">
+                <h3 class="font-bold text-ink"><i class="fas fa-key"></i> Your recovery codes</h3>
+                <p class="text-sm text-ink-soft mt-1">Each code works once if you lose your phone. Save them somewhere safe now. They won't be shown again.</p>
+                <div class="grid grid-cols-2 gap-2 mt-3 font-mono text-ink">
+                    <% codes.forEach((c) => { %><div class="rounded-lg bg-white/70 dark:bg-slate-900/60 px-3 py-2 text-center select-all"><%= c %></div><% }) %>
+                </div>
+            </div>
+        <% } %>
+    </section>
+
+    <div class="flex flex-col gap-4">
+        <form method="post" action="/admin/account/password" class="admin-card flex flex-col gap-3">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <h2 class="font-bold text-ink text-lg">Change password</h2>
+            <div><label class="admin-label" for="current">Current password</label><input class="admin-input" id="current" name="current" type="password" required autocomplete="current-password"></div>
+            <div><label class="admin-label" for="next">New password</label><input class="admin-input" id="next" name="next" type="password" required minlength="12" autocomplete="new-password"></div>
+            <div><label class="admin-label" for="confirm">Repeat new password</label><input class="admin-input" id="confirm" name="confirm" type="password" required minlength="12" autocomplete="new-password"></div>
+            <button class="admin-btn self-start">Change password</button>
+            <p class="admin-help">Changing it signs you out on other devices.</p>
+        </form>
+        <section class="admin-card">
+            <h2 class="font-bold text-ink text-lg mb-2">Your recent sign-ins</h2>
+            <ul class="text-sm">
+                <% myLogins.forEach((l) => { %>
+                    <li class="flex items-center gap-3 py-2 border-b last:border-0" style="border-color: rgb(var(--line) / .06)">
+                        <i class="fas <%= l.success ? 'fa-circle-check text-emerald-500' : 'fa-circle-xmark text-rose-500' %>"></i>
+                        <span class="text-ink"><%= formatDateTime(l.created_at) %></span>
+                        <span class="text-ink-muted text-xs ml-auto"><%= l.ip %></span>
+                    </li>
+                <% }) %>
+                <% if (!myLogins.length) { %><li class="text-ink-muted">No sign-ins yet.</li><% } %>
+            </ul>
+        </section>
+    </div>
+</div>
+<%- include('partials/bottom') %>

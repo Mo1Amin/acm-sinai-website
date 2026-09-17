@@ -1,0 +1,26 @@
+<%- include('partials/head') %>
+<body class="admin-body min-h-screen">
+<main class="min-h-screen grid place-items-center px-4 py-10">
+    <div class="w-full max-w-md">
+        <div class="flex items-center justify-center gap-3 mb-8">
+            <img src="/assets/img/logo.webp" alt="" class="w-12 h-12">
+            <div><div class="font-black text-xl text-ink leading-none">ACM Sinai</div><div class="text-sm text-ink-muted">Admin dashboard</div></div>
+        </div>
+        <%- include('partials/flash') %>
+        <div class="admin-card !p-7">
+            <h1 class="text-2xl font-black text-ink">Sign in</h1>
+            <p class="text-ink-muted mt-1 mb-6">For chapter admins only.</p>
+            <% if (error) { %><div class="mb-5 rounded-xl px-4 py-3 text-sm font-semibold bg-rose-500/10 text-rose-700 dark:text-rose-300" role="alert"><%= error %></div><% } %>
+            <form method="post" action="/admin/login" class="flex flex-col gap-4">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <div><label class="admin-label" for="email">Email</label><input class="admin-input" type="email" id="email" name="email" value="<%= email %>" required autocomplete="username" autofocus></div>
+                <div><label class="admin-label" for="password">Password</label><input class="admin-input" type="password" id="password" name="password" required autocomplete="current-password"></div>
+                <button class="admin-btn w-full py-3 mt-2">Sign in</button>
+            </form>
+        </div>
+        <p class="text-center text-xs text-ink-muted mt-6">Every sign-in attempt is logged. Accounts lock after repeated failures.</p>
+    </div>
+</main>
+<script src="/assets/js/admin.js?v=<%= version %>" defer></script>
+</body>
+</html>

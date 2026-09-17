@@ -1,0 +1,70 @@
+<%
+  const s = settings || {};
+  const title = locals.pageTitle || s.site_title || 'Sinai University ACM Student Chapter';
+  const description = locals.pageDescription || 'The official ACM Student Chapter at Sinai University. Specialized tracks, mentorship, exclusive courses, competitions, and training opportunities for computing students.';
+  const canonical = baseUrl + (locals.canonicalPath || '/');
+  const onHome = !!locals.isHome;
+  const nav = [['about', 'About'], ['tracks', 'Tracks'], ['events', 'Events'], ['gallery', 'Gallery'], ['team', 'Team'], ['join', 'Join']];
+  const navHref = (id) => (onHome ? '#' + id : '/#' + id);
+%><!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <meta name="description" content="<%= description %>">
+    <meta name="theme-color" content="#0b1220" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#f4f7fb" media="(prefers-color-scheme: light)">
+    <link rel="canonical" href="<%= canonical %>">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ACM Sinai">
+    <meta property="og:url" content="<%= canonical %>">
+    <meta property="og:title" content="<%= title %>">
+    <meta property="og:description" content="<%= description %>">
+    <meta property="og:image" content="<%= baseUrl %>/assets/img/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="/assets/img/favicon-64.png">
+    <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+    <script src="/assets/js/theme.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/css/app.css?v=<%= version %>">
+</head>
+<body class="site-body antialiased overflow-x-hidden" data-collect="/api/collect">
+
+<div id="progress-bar"></div>
+<div id="canvas-container" aria-hidden="true"></div>
+
+<div id="mobile-menu" class="fixed top-20 right-4 z-[60] w-64 glass-card rounded-2xl p-5 flex flex-col gap-1 menu-hidden md:hidden shadow-2xl">
+    <% nav.forEach(([id, label]) => { %>
+        <a href="<%= navHref(id) %>" class="mobile-link px-3 py-3 rounded-xl text-lg font-bold text-ink hover:bg-brand-soft transition-colors"><%= label %></a>
+    <% }) %>
+</div>
+
+<header class="fixed top-0 w-full z-50 glass-card site-header transition-all duration-300">
+    <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+        <a href="/" class="flex items-center gap-3 group">
+            <img src="/assets/img/logo.webp" alt="ACM Sinai logo" width="40" height="40" class="w-10 h-10 rounded-full object-cover ring-2 ring-brand shadow-lg animate-logo-live">
+            <span class="font-tech font-bold text-lg text-ink group-hover:text-brand transition-colors">SU ACM</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-7 text-sm font-bold tracking-wide" aria-label="Main">
+            <% nav.forEach(([id, label]) => { %>
+                <a href="<%= navHref(id) %>" class="py-3 text-ink-soft hover:text-brand transition-colors"><%= label %></a>
+            <% }) %>
+            <button type="button" data-theme-toggle aria-label="Toggle dark mode" class="w-11 h-11 grid place-items-center rounded-full hover:bg-brand-soft transition-colors">
+                <i class="fas fa-moon theme-icon-dark text-brand"></i><i class="fas fa-sun theme-icon-light text-amber-400"></i>
+            </button>
+        </nav>
+        <div class="flex items-center gap-1 md:hidden">
+            <button type="button" data-theme-toggle aria-label="Toggle dark mode" class="w-11 h-11 grid place-items-center rounded-full hover:bg-brand-soft">
+                <i class="fas fa-moon theme-icon-dark text-brand"></i><i class="fas fa-sun theme-icon-light text-amber-400"></i>
+            </button>
+            <button type="button" id="open-menu" aria-label="Open menu" class="w-11 h-11 grid place-items-center text-2xl text-ink"><i class="fas fa-bars"></i></button>
+        </div>
+    </div>
+</header>

@@ -1,0 +1,52 @@
+<%- include('partials/top') %>
+<% const hidden = (id) => `<input type="hidden" name="_csrf" value="${csrfToken}">`; %>
+<div class="flex flex-wrap items-center gap-3 mb-5">
+    <p class="text-ink-muted">Tracks appear on the home page in this order. Each one has its own page.</p>
+    <a href="/admin/tracks/new" class="admin-btn ml-auto"><i class="fas fa-plus"></i> New track</a>
+</div>
+<div class="admin-card !p-0 overflow-x-auto">
+    <table class="admin-table min-w-[760px]">
+        <thead><tr><th class="w-24">Order</th><th>Track</th><th>Registration</th><th>Visibility</th><th class="text-right">Actions</th></tr></thead>
+        <tbody>
+        <% tracks.forEach((t, i) => { const action = `/admin/tracks/${t.id}/action`; %>
+            <tr>
+                <td>
+                    <div class="flex gap-1">
+                        <form method="post" action="<%= action %>"><%- hidden() %><button name="action" value="up" class="w-9 h-9 rounded-lg hover:bg-surface-2 disabled:opacity-30" <%= i === 0 ? 'disabled' : '' %> aria-label="Move up"><i class="fas fa-arrow-up"></i></button></form>
+                        <form method="post" action="<%= action %>"><%- hidden() %><button name="action" value="down" class="w-9 h-9 rounded-lg hover:bg-surface-2 disabled:opacity-30" <%= i === tracks.length - 1 ? 'disabled' : '' %> aria-label="Move down"><i class="fas fa-arrow-down"></i></button></form>
+                    </div>
+                </td>
+                <td>
+                    <div class="flex items-center gap-3">
+                        <div class="icon-tile w-10 h-10 shrink-0"><i class="fas <%= t.icon %>"></i></div>
+                        <div><div class="font-bold"><%= t.name %></div><div class="text-xs text-ink-muted">/tracks/<%= t.slug %></div></div>
+                    </div>
+                </td>
+                <td>
+                    <form method="post" action="<%= action %>">
+                        <%- hidden() %><input type="hidden" name="action" value="status">
+                        <select name="status" class="admin-input !py-1.5 !w-auto text-sm" data-autosubmit aria-label="Registration status for <%= t.name %>">
+                            <% [['open', 'Open'], ['soon', 'Coming soon'], ['closed', 'Closed']].forEach(([k, l]) => { %>
+                                <option value="<%= k %>" <%= t.status === k ? 'selected' : '' %>><%= l %></option>
+                            <% }) %>
+                        </select>
+                    </form>
+                </td>
+                <td>
+                    <% if (t.is_visible) { %><span class="admin-pill bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"><i class="fas fa-eye"></i> Visible</span><% } else { %><span class="admin-pill bg-slate-500/10 text-slate-500"><i class="fas fa-eye-slash"></i> Hidden</span><% } %>
+                </td>
+                <td>
+                    <div class="flex justify-end gap-2">
+                        <a class="admin-btn-ghost !px-3" href="/tracks/<%= t.slug %>" target="_blank" rel="noopener" aria-label="Preview"><i class="fas fa-arrow-up-right-from-square"></i></a>
+                        <form method="post" action="<%= action %>"><%- hidden() %><button name="action" value="toggle" class="admin-btn-ghost !px-3" aria-label="<%= t.is_visible ? 'Hide' : 'Show' %>"><i class="fas <%= t.is_visible ? 'fa-eye-slash' : 'fa-eye' %>"></i></button></form>
+                        <a class="admin-btn-ghost" href="/admin/tracks/<%= t.id %>"><i class="fas fa-pen"></i> Edit</a>
+                        <form method="post" action="<%= action %>" data-confirm="Delete the track &quot;<%= t.name %>&quot;? This cannot be undone."><%- hidden() %><button name="action" value="delete" class="admin-btn-ghost !px-3 text-rose-600" aria-label="Delete"><i class="fas fa-trash"></i></button></form>
+                    </div>
+                </td>
+            </tr>
+        <% }) %>
+        <% if (!tracks.length) { %><tr><td colspan="5" class="text-center text-ink-muted py-10">No tracks yet.</td></tr><% } %>
+        </tbody>
+    </table>
+</div>
+<%- include('partials/bottom') %>

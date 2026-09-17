@@ -1,0 +1,57 @@
+<%- include('partials/top') %>
+<%
+  const delta = (now, prev) => {
+    if (!prev) return now ? '<span class="text-xs font-bold text-emerald-600 dark:text-emerald-300">new</span>' : '';
+    const pct = Math.round(((now - prev) / prev) * 100);
+    const cls = pct >= 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300';
+    return `<span class="text-xs font-bold ${cls}">${pct >= 0 ? '▲' : '▼'} ${Math.abs(pct)}%</span>`;
+  };
+%>
+<p class="text-ink-muted -mt-2 mb-6">Welcome back, <%= user.name.split(' ')[0] %>.</p>
+
+<% if (stats) { %>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="admin-card"><div class="text-sm text-ink-muted font-semibold">Visitors · 7 days</div><div class="mt-2 flex items-end gap-2"><span class="text-3xl font-black text-ink"><%= stats.visitors.toLocaleString() %></span><%- delta(stats.visitors, stats.prevVisitors) %></div></div>
+    <div class="admin-card"><div class="text-sm text-ink-muted font-semibold">Page views · 7 days</div><div class="mt-2 flex items-end gap-2"><span class="text-3xl font-black text-ink"><%= stats.views.toLocaleString() %></span><%- delta(stats.views, stats.prevViews) %></div></div>
+    <div class="admin-card"><div class="text-sm text-ink-muted font-semibold">Clicks · 7 days</div><div class="mt-2 text-3xl font-black text-ink"><%= stats.clicks.toLocaleString() %></div></div>
+    <div class="admin-card"><div class="text-sm text-ink-muted font-semibold">On the site now</div><div class="mt-2 flex items-center gap-2 text-3xl font-black text-ink"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 <%= stats.live ? 'animate-pulse' : 'opacity-30' %>"></span><%= stats.live %></div></div>
+</div>
+<div class="admin-card mt-4">
+    <div class="flex items-center justify-between mb-3"><h2 class="font-bold text-ink">Last 7 days</h2><a class="text-sm font-semibold text-brand" href="/admin/analytics">Full analytics →</a></div>
+    <div class="h-56"><canvas id="chart-daily" data-series="<%= JSON.stringify(stats.series) %>"></canvas></div>
+</div>
+<% } %>
+
+<div class="grid md:grid-cols-3 gap-4 mt-4">
+    <% if (can('tracks')) { %><a href="/admin/tracks" class="admin-card transition hover:-translate-y-0.5"><div class="flex items-center gap-4"><div class="icon-tile w-12 h-12 text-xl"><i class="fas fa-layer-group"></i></div><div><div class="text-2xl font-black text-ink"><%= counts.tracks %></div><div class="text-sm text-ink-muted"><%= counts.openTracks %> open for registration</div></div></div></a><% } %>
+    <% if (can('events')) { %><a href="/admin/events" class="admin-card transition hover:-translate-y-0.5"><div class="flex items-center gap-4"><div class="icon-tile w-12 h-12 text-xl"><i class="fas fa-calendar-days"></i></div><div><div class="text-2xl font-black text-ink"><%= counts.upcoming %></div><div class="text-sm text-ink-muted">upcoming events</div></div></div></a><% } %>
+    <% if (can('gallery')) { %><a href="/admin/gallery" class="admin-card transition hover:-translate-y-0.5"><div class="flex items-center gap-4"><div class="icon-tile w-12 h-12 text-xl"><i class="fas fa-images"></i></div><div><div class="text-2xl font-black text-ink"><%= counts.photos %></div><div class="text-sm text-ink-muted">photos in <%= counts.albums %> albums</div></div></div></a><% } %>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-4 mt-4">
+    <div class="admin-card lg:col-span-2">
+        <div class="flex items-center justify-between mb-2"><h2 class="font-bold text-ink">Recent activity</h2><% if (can('logs')) { %><a class="text-sm font-semibold text-brand" href="/admin/logs">All logs →</a><% } %></div>
+        <% if (!activity.length) { %><p class="text-ink-muted py-6 text-center">No activity yet.</p><% } %>
+        <ul>
+            <% activity.forEach((a) => { %>
+                <li class="py-3 flex items-start gap-3 border-b last:border-0" style="border-color: rgb(var(--line) / .06)">
+                    <div class="w-8 h-8 rounded-full grid place-items-center avatar-initials text-xs font-black shrink-0"><%= initials(a.user_name || '?') %></div>
+                    <div class="min-w-0"><div class="text-ink text-sm"><span class="font-semibold"><%= a.user_name || 'System' %></span> · <%= a.summary %></div><div class="text-xs text-ink-muted"><%= timeAgo(a.created_at) %></div></div>
+                </li>
+            <% }) %>
+        </ul>
+    </div>
+    <div class="admin-card">
+        <h2 class="font-bold text-ink mb-3">Security</h2>
+        <ul class="flex flex-col gap-3 text-sm">
+            <li class="flex items-center gap-3"><i class="fas <%= user.totp_enabled ? 'fa-circle-check text-emerald-500' : 'fa-triangle-exclamation text-amber-500' %>"></i><span class="text-ink">Two-step verification <%= user.totp_enabled ? 'is on' : 'is off' %></span></li>
+            <% if (failed24h !== null) { %>
+            <li class="flex items-center gap-3"><i class="fas <%= Number(failed24h) > 10 ? 'fa-triangle-exclamation text-amber-500' : 'fa-circle-check text-emerald-500' %>"></i><span class="text-ink"><%= failed24h %> failed sign-ins in the last 24 h</span></li>
+            <% } %>
+            <li class="flex items-center gap-3"><i class="fas fa-clock text-ink-muted"></i><span class="text-ink">Last sign-in: <%= user.last_login_at ? formatDateTime(user.last_login_at) : '—' %></span></li>
+        </ul>
+        <a href="/admin/account" class="admin-btn-ghost w-full mt-5">Account & security</a>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+<%- include('partials/bottom') %>

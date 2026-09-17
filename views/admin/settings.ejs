@@ -1,0 +1,40 @@
+<%- include('partials/top') %>
+<form method="post" action="/admin/settings" class="grid lg:grid-cols-3 gap-4">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="lg:col-span-2 flex flex-col gap-4">
+        <section class="admin-card flex flex-col gap-4">
+            <h2 class="font-bold text-ink">Home page text</h2>
+            <% fields.filter(([k]) => ['hero_kicker', 'hero_line1', 'hero_line2', 'hero_text', 'about_text'].includes(k)).forEach(([key, label, max]) => { %>
+                <div>
+                    <label class="admin-label" for="<%= key %>"><%= label %></label>
+                    <% if (max > 200) { %>
+                        <textarea class="admin-input min-h-[100px]" id="<%= key %>" name="<%= key %>" maxlength="<%= max %>"><%= values[key] || '' %></textarea>
+                    <% } else { %>
+                        <input class="admin-input" id="<%= key %>" name="<%= key %>" maxlength="<%= max %>" value="<%= values[key] || '' %>">
+                    <% } %>
+                </div>
+            <% }) %>
+        </section>
+        <section class="admin-card grid sm:grid-cols-2 gap-4">
+            <h2 class="font-bold text-ink sm:col-span-2">Contact & social links</h2>
+            <% fields.filter(([k]) => ['contact_email', 'whatsapp_url', 'facebook_url', 'instagram_url', 'tiktok_url', 'linkedin_url'].includes(k)).forEach(([key, label, max, type]) => { %>
+                <div><label class="admin-label" for="<%= key %>"><%= label %></label><input class="admin-input" id="<%= key %>" name="<%= key %>" type="<%= type === 'url' ? 'url' : type === 'email' ? 'email' : 'text' %>" maxlength="<%= max %>" value="<%= values[key] || '' %>"></div>
+            <% }) %>
+        </section>
+    </div>
+    <div class="flex flex-col gap-4">
+        <section class="admin-card flex flex-col gap-4">
+            <h2 class="font-bold text-ink">Membership registration</h2>
+            <label class="flex items-center gap-3 font-semibold text-ink"><input type="checkbox" name="registration_open" value="1" class="w-5 h-5" <%= values.registration_open === '1' ? 'checked' : '' %>> Registration is open</label>
+            <div><label class="admin-label" for="registration_url">Registration form link</label><input class="admin-input" id="registration_url" name="registration_url" type="url" maxlength="500" value="<%= values.registration_url || '' %>"></div>
+            <p class="admin-help -mt-2">When closed, the site shows "Registration opens soon".</p>
+        </section>
+        <section class="admin-card flex flex-col gap-3">
+            <h2 class="font-bold text-ink">Analytics</h2>
+            <label class="admin-label" for="analytics_retention_days">Keep visit data for (days)</label>
+            <input class="admin-input" id="analytics_retention_days" name="analytics_retention_days" type="number" min="30" max="730" value="<%= values.analytics_retention_days || 365 %>">
+        </section>
+        <button class="admin-btn py-3"><i class="fas fa-check"></i> Save settings</button>
+    </div>
+</form>
+<%- include('partials/bottom') %>

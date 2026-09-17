@@ -1,0 +1,54 @@
+<%- include('head') %>
+<%
+  const nav = [
+    ['/admin', 'Overview', 'fa-gauge', 'dashboard'],
+    ['/admin/analytics', 'Analytics', 'fa-chart-line', 'analytics'],
+    ['/admin/tracks', 'Tracks', 'fa-layer-group', 'tracks'],
+    ['/admin/events', 'Events', 'fa-calendar-days', 'events'],
+    ['/admin/gallery', 'Gallery', 'fa-images', 'gallery'],
+    ['/admin/people', 'Team', 'fa-users', 'people'],
+    ['/admin/settings', 'Site settings', 'fa-sliders', 'settings'],
+    ['/admin/users', 'Admins', 'fa-user-shield', 'users'],
+    ['/admin/logs', 'Activity logs', 'fa-clock-rotate-left', 'logs'],
+  ];
+  const current = '/admin' + (path === '/' ? '' : path);
+  const isActive = (href) => href === '/admin' ? current === '/admin' : current.startsWith(href);
+%>
+<body class="admin-body min-h-screen">
+<div class="flex min-h-screen">
+    <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-40 w-64 -translate-x-full lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen transition-transform duration-200 border-r" style="background: rgb(var(--surface)); border-color: rgb(var(--line) / .08)">
+        <div class="h-full flex flex-col">
+            <a href="/admin" class="flex items-center gap-3 px-5 py-5">
+                <img src="/assets/img/logo.webp" alt="" class="w-9 h-9">
+                <div><div class="font-black text-ink leading-none">ACM Sinai</div><div class="text-xs text-ink-muted">Admin</div></div>
+            </a>
+            <nav class="admin-nav flex-1 px-3 flex flex-col gap-1 overflow-y-auto" aria-label="Admin">
+                <% nav.forEach(([href, label, icon, perm]) => { if (!can(perm)) return; %>
+                    <a href="<%= href %>" class="<%= isActive(href) ? 'active' : '' %>"><i class="fas <%= icon %> w-5 text-center"></i><%= label %></a>
+                <% }) %>
+                <a href="/" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square w-5 text-center"></i>View site</a>
+            </nav>
+            <div class="p-3 border-t" style="border-color: rgb(var(--line) / .08)">
+                <a href="/admin/account" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-surface-2">
+                    <div class="w-9 h-9 rounded-full grid place-items-center avatar-initials text-sm font-black"><%= initials(user.name) %></div>
+                    <div class="min-w-0"><div class="font-semibold text-ink truncate"><%= user.name %></div><div class="text-xs text-ink-muted"><%= ROLE_LABELS[user.role] %></div></div>
+                </a>
+                <form method="post" action="/admin/logout" class="mt-1">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-rose-600 hover:bg-rose-500/10"><i class="fas fa-right-from-bracket w-5 text-center"></i>Sign out</button>
+                </form>
+            </div>
+        </div>
+    </aside>
+    <div id="sidebar-backdrop" class="fixed inset-0 z-30 bg-slate-900/40 hidden lg:hidden"></div>
+
+    <div class="flex-1 min-w-0">
+        <header class="sticky top-0 z-20 flex items-center gap-3 px-4 md:px-8 py-3 border-b backdrop-blur" style="background: rgb(var(--bg) / .85); border-color: rgb(var(--line) / .08)">
+            <button type="button" id="sidebar-open" class="lg:hidden w-11 h-11 grid place-items-center rounded-xl hover:bg-surface-2" aria-label="Open menu"><i class="fas fa-bars text-ink"></i></button>
+            <h1 class="text-lg md:text-xl font-black text-ink truncate"><%= title %></h1>
+            <div class="ml-auto flex items-center gap-2">
+                <button type="button" data-theme-toggle class="w-11 h-11 grid place-items-center rounded-xl hover:bg-surface-2" aria-label="Toggle dark mode"><i class="fas fa-moon theme-icon-dark text-brand"></i><i class="fas fa-sun theme-icon-light text-amber-400"></i></button>
+            </div>
+        </header>
+        <main class="px-4 md:px-8 py-6 md:py-8 max-w-7xl">
+            <%- include('flash') %>

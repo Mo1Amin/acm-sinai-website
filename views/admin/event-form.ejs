@@ -1,0 +1,26 @@
+<%- include('partials/top') %>
+<% const ev = event; %>
+<a href="/admin/events" class="inline-flex items-center gap-2 text-ink-muted hover:text-brand font-semibold mb-4"><i class="fas fa-arrow-left"></i> Events</a>
+<form method="post" action="/admin/events/<%= ev.id || 'new' %>" enctype="multipart/form-data" class="grid lg:grid-cols-3 gap-4">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="lg:col-span-2 admin-card grid sm:grid-cols-2 gap-4 content-start">
+        <div class="sm:col-span-2"><label class="admin-label" for="title">Title</label><input class="admin-input" id="title" name="title" required maxlength="200" value="<%= ev.title || '' %>"></div>
+        <div><label class="admin-label" for="starts_at">Date & time (Cairo)</label><input class="admin-input" id="starts_at" name="starts_at" type="datetime-local" required value="<%= toLocalInput(ev.starts_at) %>"></div>
+        <div><label class="admin-label" for="location">Location</label><input class="admin-input" id="location" name="location" maxlength="200" value="<%= ev.location || '' %>" placeholder="Arish campus · Hall 3 / Online"></div>
+        <div class="sm:col-span-2"><label class="admin-label" for="description">Description</label><textarea class="admin-input min-h-[140px]" id="description" name="description" maxlength="3000"><%= ev.description || '' %></textarea></div>
+        <div><label class="admin-label" for="register_url">Registration link</label><input class="admin-input" id="register_url" name="register_url" type="url" maxlength="500" value="<%= ev.register_url || '' %>" placeholder="https://forms.gle/..."></div>
+        <div><label class="admin-label" for="meeting_url">Meeting link</label><input class="admin-input" id="meeting_url" name="meeting_url" type="url" maxlength="500" value="<%= ev.meeting_url || '' %>" placeholder="https://meet.google.com/..."></div>
+        <p class="admin-help sm:col-span-2 -mt-2">Links are shown only while the event is upcoming.</p>
+    </div>
+    <div class="flex flex-col gap-4">
+        <div class="admin-card flex flex-col gap-3">
+            <label class="admin-label" for="image">Poster</label>
+            <% if (ev.image) { %><img src="<%= asset(ev.image) %>" alt="" class="rounded-xl w-full object-cover"><% } %>
+            <input class="admin-input" id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp">
+            <p class="admin-help">JPG, PNG or WebP up to 12 MB. Resized automatically.</p>
+            <label class="flex items-center gap-3 font-semibold text-ink mt-2"><input type="checkbox" name="is_visible" value="1" class="w-5 h-5" <%= (ev.is_visible === undefined || ev.is_visible) ? 'checked' : '' %>> Visible on the site</label>
+        </div>
+        <button class="admin-btn py-3"><i class="fas fa-check"></i> Save event</button>
+    </div>
+</form>
+<%- include('partials/bottom') %>

@@ -1,0 +1,48 @@
+<%- include('partials/top') %>
+<%
+  const reasons = { password_only: 'Signed in', totp: 'Signed in with 2-step', recovery_code: 'Signed in with recovery code', bad_password: 'Wrong password', bad_password_locked: 'Wrong password · account locked', unknown_user: 'Unknown email', locked: 'Account locked', disabled: 'Disabled account', ip_throttled: 'Too many attempts from this network', bad_2fa: 'Wrong 2-step code', '2fa_too_many': 'Too many 2-step attempts' };
+  const qs = (extra) => new URLSearchParams({ ...query, ...extra }).toString();
+%>
+<div class="flex flex-wrap items-center gap-2 mb-5">
+    <a href="/admin/logs" class="<%= tab === 'activity' ? 'admin-btn' : 'admin-btn-ghost' %>"><i class="fas fa-list"></i> Activity</a>
+    <a href="/admin/logs?tab=logins" class="<%= tab === 'logins' ? 'admin-btn' : 'admin-btn-ghost' %>"><i class="fas fa-right-to-bracket"></i> Sign-in attempts</a>
+    <% if (tab === 'activity') { %>
+        <form method="get" action="/admin/logs" class="ml-auto flex gap-2"><input class="admin-input !py-2" name="q" value="<%= query.q || '' %>" placeholder="Search activity" aria-label="Search activity"><button class="admin-btn-ghost"><i class="fas fa-magnifying-glass"></i></button></form>
+    <% } else { %>
+        <a class="ml-auto admin-btn-ghost" href="/admin/logs?<%= qs({ tab: 'logins', failed: query.failed === '1' ? '0' : '1', page: 1 }) %>"><%= query.failed === '1' ? 'Show all' : 'Only failed' %></a>
+    <% } %>
+</div>
+<div class="admin-card !p-0 overflow-x-auto">
+    <table class="admin-table min-w-[720px]">
+        <% if (tab === 'activity') { %>
+            <thead><tr><th>When</th><th>Who</th><th>What</th><th>IP</th></tr></thead>
+            <tbody>
+            <% rows.forEach((r) => { %>
+                <tr><td class="whitespace-nowrap text-ink-muted"><%= formatDateTime(r.created_at) %></td><td class="font-semibold"><%= r.user_name || 'System' %></td><td><%= r.summary %></td><td class="text-xs text-ink-muted"><%= r.ip %></td></tr>
+            <% }) %>
+            </tbody>
+        <% } else { %>
+            <thead><tr><th>When</th><th>Email</th><th>Result</th><th>IP</th><th>Device</th></tr></thead>
+            <tbody>
+            <% rows.forEach((r) => { %>
+                <tr>
+                    <td class="whitespace-nowrap text-ink-muted"><%= formatDateTime(r.created_at) %></td>
+                    <td><%= r.email %></td>
+                    <td><span class="admin-pill <%= r.success ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' : 'bg-rose-500/10 text-rose-700 dark:text-rose-300' %>"><%= reasons[r.reason] || r.reason || (r.success ? 'Success' : 'Failed') %></span></td>
+                    <td class="text-xs text-ink-muted"><%= r.ip %></td>
+                    <td class="text-xs text-ink-muted max-w-[260px] truncate" title="<%= r.user_agent %>"><%= r.user_agent %></td>
+                </tr>
+            <% }) %>
+            </tbody>
+        <% } %>
+        <% if (!rows.length) { %><tbody><tr><td colspan="5" class="text-center text-ink-muted py-10">Nothing here yet.</td></tr></tbody><% } %>
+    </table>
+</div>
+<% if (pages > 1) { %>
+<div class="flex items-center justify-center gap-2 mt-5">
+    <% if (page > 1) { %><a class="admin-btn-ghost" href="/admin/logs?<%= qs({ page: page - 1 }) %>">← Newer</a><% } %>
+    <span class="text-sm text-ink-muted">Page <%= page %> of <%= pages %></span>
+    <% if (page < pages) { %><a class="admin-btn-ghost" href="/admin/logs?<%= qs({ page: page + 1 }) %>">Older →</a><% } %>
+</div>
+<% } %>
+<%- include('partials/bottom') %>

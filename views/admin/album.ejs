@@ -1,0 +1,49 @@
+<%- include('partials/top') %>
+<a href="/admin/gallery" class="inline-flex items-center gap-2 text-ink-muted hover:text-brand font-semibold mb-4"><i class="fas fa-arrow-left"></i> Gallery</a>
+<div class="grid lg:grid-cols-3 gap-4">
+    <form method="post" action="/admin/gallery/<%= album.id %>/photos" enctype="multipart/form-data" class="lg:col-span-2 admin-card flex flex-col gap-3" data-upload>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <h2 class="font-bold text-ink">Add photos</h2>
+        <label for="photos" class="rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer hover:bg-surface-2 transition" style="border-color: rgb(var(--line) / .18)" data-dropzone>
+            <i class="fas fa-cloud-arrow-up text-3xl text-brand"></i>
+            <div class="font-semibold text-ink mt-2">Choose photos or drop them here</div>
+            <div class="text-sm text-ink-muted">Up to 40 at once · JPG, PNG, WebP · 12 MB each · resized and optimized automatically</div>
+            <div class="text-sm font-semibold text-brand mt-2" data-file-count></div>
+        </label>
+        <input id="photos" name="photos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple class="sr-only" required>
+        <button class="admin-btn self-start" data-upload-btn><i class="fas fa-upload"></i> Upload</button>
+    </form>
+    <form method="post" action="/admin/gallery/<%= album.id %>/details" class="admin-card flex flex-col gap-3">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <h2 class="font-bold text-ink">Album details</h2>
+        <div><label class="admin-label" for="title">Title</label><input class="admin-input" id="title" name="title" maxlength="200" value="<%= album.title %>"></div>
+        <div><label class="admin-label" for="date_label">Date label</label><input class="admin-input" id="date_label" name="date_label" maxlength="80" value="<%= album.date_label || '' %>"></div>
+        <div><label class="admin-label" for="description">Description</label><textarea class="admin-input" id="description" name="description" maxlength="1000"><%= album.description || '' %></textarea></div>
+        <label class="flex items-center gap-3 font-semibold text-ink"><input type="checkbox" name="is_visible" value="1" class="w-5 h-5" <%= album.is_visible ? 'checked' : '' %>> Visible on the site</label>
+        <button class="admin-btn-ghost">Save details</button>
+    </form>
+</div>
+
+<h2 class="font-bold text-ink mt-8 mb-3"><%= photos.length %> photos</h2>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+    <% photos.forEach((p, i) => { const action = `/admin/gallery/${album.id}/photo/${p.id}`; const isCover = album.cover_photo_id === p.id; %>
+        <div class="admin-card !p-2 flex flex-col gap-2" id="photo-<%= p.id %>">
+            <div class="relative">
+                <img src="<%= asset(p.thumb) %>" alt="" loading="lazy" class="w-full aspect-[4/3] object-cover rounded-xl">
+                <% if (isCover) { %><span class="absolute top-2 left-2 admin-pill bg-brand text-white"><i class="fas fa-star"></i> Cover</span><% } %>
+            </div>
+            <form method="post" action="<%= action %>" class="flex gap-1">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="action" value="caption">
+                <input class="admin-input !py-1.5 text-sm" name="caption" maxlength="255" value="<%= p.caption || '' %>" placeholder="Caption" aria-label="Caption">
+                <button class="w-9 shrink-0 rounded-lg hover:bg-surface-2" aria-label="Save caption"><i class="fas fa-check"></i></button>
+            </form>
+            <div class="flex items-center gap-1">
+                <form method="post" action="<%= action %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="action" value="up" class="w-9 h-9 rounded-lg hover:bg-surface-2 disabled:opacity-30" <%= i === 0 ? 'disabled' : '' %> aria-label="Move earlier"><i class="fas fa-arrow-left"></i></button></form>
+                <form method="post" action="<%= action %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="action" value="down" class="w-9 h-9 rounded-lg hover:bg-surface-2 disabled:opacity-30" <%= i === photos.length - 1 ? 'disabled' : '' %> aria-label="Move later"><i class="fas fa-arrow-right"></i></button></form>
+                <% if (!isCover) { %><form method="post" action="<%= action %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="action" value="cover" class="w-9 h-9 rounded-lg hover:bg-surface-2" aria-label="Use as cover"><i class="far fa-star"></i></button></form><% } %>
+                <form method="post" action="<%= action %>" class="ml-auto" data-confirm="Delete this photo?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="action" value="delete" class="w-9 h-9 rounded-lg hover:bg-rose-500/10 text-rose-600" aria-label="Delete photo"><i class="fas fa-trash"></i></button></form>
+            </div>
+        </div>
+    <% }) %>
+</div>
+<%- include('partials/bottom') %>

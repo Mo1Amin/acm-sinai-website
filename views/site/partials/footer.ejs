@@ -1,0 +1,48 @@
+<%
+  const fs = settings || {};
+  const socials = [['facebook_url', 'fa-facebook', 'Facebook'], ['instagram_url', 'fa-instagram', 'Instagram'], ['tiktok_url', 'fa-tiktok', 'TikTok'], ['linkedin_url', 'fa-linkedin', 'LinkedIn']];
+%>
+<footer class="site-footer mt-10 pt-20 pb-10">
+    <div class="container mx-auto px-6 grid md:grid-cols-3 gap-10 text-center md:text-left">
+        <div class="md:col-span-2 flex flex-col items-center md:items-start">
+            <div class="flex items-center gap-3 mb-5">
+                <img src="/assets/img/logo.webp" alt="" width="40" height="40" class="w-10 h-10" loading="lazy">
+                <span class="font-bold text-xl text-white">Sinai University ACM Student Chapter</span>
+            </div>
+            <p class="text-slate-400 text-lg max-w-md">Empowering students to create, innovate, and inspire.</p>
+        </div>
+        <div class="flex flex-col items-center md:items-start">
+            <h3 class="font-bold text-xl text-white mb-4">Contact</h3>
+            <% if (fs.contact_email) { %>
+                <a href="mailto:<%= fs.contact_email %>" class="flex items-center gap-3 py-2 text-slate-400 hover:text-cyan-300 text-lg"><i class="fas fa-envelope"></i> <%= fs.contact_email %></a>
+            <% } %>
+            <div class="flex gap-2 mt-3">
+                <% socials.forEach(([key, icon, label]) => { if (fs[key]) { %>
+                    <a href="<%= fs[key] %>" target="_blank" rel="noopener" aria-label="<%= label %>" class="w-12 h-12 grid place-items-center rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition"><i class="fab <%= icon %> text-2xl"></i></a>
+                <% } }) %>
+            </div>
+        </div>
+    </div>
+    <div class="container mx-auto px-6 mt-12 pt-8 border-t border-white/10 text-center text-slate-500 text-sm">
+        &copy; <%= new Date().getFullYear() %> Sinai University ACM Student Chapter. All rights reserved.
+    </div>
+</footer>
+
+<div id="lightbox" class="lb-hidden fixed inset-0 z-[80] bg-slate-950 flex flex-col" role="dialog" aria-modal="true" aria-label="Photo viewer">
+    <div class="flex items-center justify-between px-4 md:px-8 py-4 text-white">
+        <div class="min-w-0"><div id="lb-title" class="font-bold text-lg md:text-xl truncate"></div><div id="lb-counter" class="text-sm text-slate-400"></div></div>
+        <button type="button" id="lb-close" aria-label="Close" class="w-12 h-12 shrink-0 grid place-items-center rounded-full hover:bg-white/10 text-2xl"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div id="lb-stage" class="relative flex-1 flex items-center justify-center px-2 md:px-20 min-h-0">
+        <button type="button" id="lb-prev" aria-label="Previous photo" class="absolute left-2 md:left-6 w-12 h-12 grid place-items-center rounded-full bg-white/10 hover:bg-white/20 text-white text-xl z-10"><i class="fas fa-chevron-left"></i></button>
+        <img id="lb-image" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" class="max-h-full max-w-full object-contain rounded-xl select-none">
+        <button type="button" id="lb-next" aria-label="Next photo" class="absolute right-2 md:right-6 w-12 h-12 grid place-items-center rounded-full bg-white/10 hover:bg-white/20 text-white text-xl z-10"><i class="fas fa-chevron-right"></i></button>
+    </div>
+    <div id="lb-caption" class="text-center text-slate-300 px-6 pt-3 min-h-[1.5rem]"></div>
+    <div id="lb-thumbs" class="flex gap-2 overflow-x-auto no-scrollbar px-4 py-4 justify-start md:justify-center"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js" defer></script>
+<script src="/assets/js/site.js?v=<%= version %>" defer></script>
+</body>
+</html>

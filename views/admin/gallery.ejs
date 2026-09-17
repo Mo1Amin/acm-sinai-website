@@ -1,0 +1,33 @@
+<%- include('partials/top') %>
+<div class="grid lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2 flex flex-col gap-3">
+        <% albums.forEach((a, i) => { const action = `/admin/gallery/${a.id}/action`; %>
+            <div class="admin-card !p-3 flex items-center gap-4">
+                <a href="/admin/gallery/<%= a.id %>" class="shrink-0">
+                    <% if (a.cover_thumb) { %><img src="<%= asset(a.cover_thumb) %>" alt="" class="w-24 h-18 aspect-[4/3] rounded-xl object-cover"><% } else { %><div class="w-24 aspect-[4/3] rounded-xl bg-surface-2 grid place-items-center text-ink-muted"><i class="fas fa-images text-xl"></i></div><% } %>
+                </a>
+                <div class="min-w-0 flex-1">
+                    <a href="/admin/gallery/<%= a.id %>" class="font-bold text-ink hover:text-brand"><%= a.title %></a>
+                    <div class="text-sm text-ink-muted"><%= a.photo_count %> photos<%= a.date_label ? ' · ' + a.date_label : '' %></div>
+                    <% if (!a.is_visible) { %><span class="admin-pill bg-slate-500/10 text-slate-500 mt-1"><i class="fas fa-eye-slash"></i> Hidden</span><% } %>
+                </div>
+                <div class="flex items-center gap-1 flex-wrap justify-end">
+                    <form method="post" action="<%= action %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="action" value="up" class="w-9 h-9 rounded-lg hover:bg-surface-2 disabled:opacity-30" <%= i === 0 ? 'disabled' : '' %> aria-label="Move up"><i class="fas fa-arrow-up"></i></button></form>
+                    <form method="post" action="<%= action %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="action" value="down" class="w-9 h-9 rounded-lg hover:bg-surface-2 disabled:opacity-30" <%= i === albums.length - 1 ? 'disabled' : '' %> aria-label="Move down"><i class="fas fa-arrow-down"></i></button></form>
+                    <form method="post" action="<%= action %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="action" value="toggle" class="w-9 h-9 rounded-lg hover:bg-surface-2" aria-label="<%= a.is_visible ? 'Hide' : 'Show' %>"><i class="fas <%= a.is_visible ? 'fa-eye-slash' : 'fa-eye' %>"></i></button></form>
+                    <a href="/admin/gallery/<%= a.id %>" class="admin-btn-ghost !py-2"><i class="fas fa-folder-open"></i> Open</a>
+                    <form method="post" action="<%= action %>" data-confirm="Delete the album &quot;<%= a.title %>&quot; and all its photos?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="action" value="delete" class="w-9 h-9 rounded-lg hover:bg-rose-500/10 text-rose-600" aria-label="Delete album"><i class="fas fa-trash"></i></button></form>
+                </div>
+            </div>
+        <% }) %>
+        <% if (!albums.length) { %><div class="admin-card text-center text-ink-muted py-10">No albums yet. Create the first one.</div><% } %>
+    </div>
+    <form method="post" action="/admin/gallery" class="admin-card flex flex-col gap-4 self-start">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <h2 class="font-bold text-ink">New album</h2>
+        <div><label class="admin-label" for="title">Title</label><input class="admin-input" id="title" name="title" required maxlength="200" placeholder="Orientation Day 2026"></div>
+        <div><label class="admin-label" for="date_label">Date label</label><input class="admin-input" id="date_label" name="date_label" maxlength="80" placeholder="Oct 2026"></div>
+        <button class="admin-btn"><i class="fas fa-folder-plus"></i> Create album</button>
+    </form>
+</div>
+<%- include('partials/bottom') %>

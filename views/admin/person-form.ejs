@@ -1,0 +1,26 @@
+<%- include('partials/top') %>
+<% const p = person; %>
+<a href="/admin/people" class="inline-flex items-center gap-2 text-ink-muted hover:text-brand font-semibold mb-4"><i class="fas fa-arrow-left"></i> Team</a>
+<form method="post" action="/admin/people/<%= p.id || 'new' %>" enctype="multipart/form-data" class="admin-card max-w-2xl grid sm:grid-cols-2 gap-4">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div><label class="admin-label" for="name">Name</label><input class="admin-input" id="name" name="name" required maxlength="120" value="<%= p.name || '' %>"></div>
+    <div><label class="admin-label" for="role">Role</label><input class="admin-input" id="role" name="role" required maxlength="120" value="<%= p.role || '' %>" placeholder="Chair, Head of PR..."></div>
+    <div>
+        <label class="admin-label" for="grp">Section</label>
+        <select class="admin-input" id="grp" name="grp">
+            <% Object.entries(groups).forEach(([k, l]) => { %><option value="<%= k %>" <%= p.grp === k ? 'selected' : '' %>><%= l %></option><% }) %>
+        </select>
+    </div>
+    <div><label class="admin-label" for="linkedin_url">LinkedIn (optional)</label><input class="admin-input" id="linkedin_url" name="linkedin_url" type="url" maxlength="500" value="<%= p.linkedin_url || '' %>"></div>
+    <div class="sm:col-span-2">
+        <label class="admin-label" for="photo">Photo</label>
+        <div class="flex items-center gap-4">
+            <% if (p.photo) { %><img src="<%= asset(p.photo) %>" alt="" class="w-16 h-16 rounded-full object-cover"><label class="text-sm text-ink-muted flex items-center gap-2"><input type="checkbox" name="remove_photo" value="1"> Remove photo (show initials)</label><% } %>
+        </div>
+        <input class="admin-input mt-2" id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp">
+        <p class="admin-help">Cropped to a square around the face automatically. Leave empty to show initials.</p>
+    </div>
+    <label class="flex items-center gap-3 font-semibold text-ink sm:col-span-2"><input type="checkbox" name="is_visible" value="1" class="w-5 h-5" <%= p.is_visible ? 'checked' : '' %>> Visible on the site</label>
+    <button class="admin-btn sm:col-span-2 py-3"><i class="fas fa-check"></i> Save</button>
+</form>
+<%- include('partials/bottom') %>
