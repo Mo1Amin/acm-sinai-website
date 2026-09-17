@@ -1,0 +1,12 @@
+{
+  "name": "acm-sinai-website",
+  "private": true,
+  "description": "Website of the Sinai University ACM Student Chapter (su.acm.org)",
+  "scripts": {
+    "build": "tailwindcss -i src/input.css -o site/css/style.css --minify",
+    "watch": "tailwindcss -i src/input.css -o site/css/style.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}
