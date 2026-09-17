@@ -44,9 +44,17 @@ function createApp() {
   }));
   app.use(compression());
 
-  // Force HTTPS in production.
+  // Force HTTPS in production. Only redirect when the proxy explicitly reports plain http,
+  // so a proxy that omits the header cannot cause a redirect loop.
   if (config.isProd) {
-    app.use((req, res, next) => (req.secure ? next() : res.redirect(301, `https://${req.hostname}${req.originalUrl}`)));
+    app.use((req, res, next) => {
+      const proto = String(req.get('x-forwarded-proto') || '').split(',')[0].trim();
+      if (proto === 'http') return res.redirect(301, `https://${req.hostname}${req.originalUrl}`);
+      if (!proto && req.get('x-forwarded-ssl') !== 'on' && !req.secure && process.env.ASSUME_HTTPS === '1') {
+        req.headers['x-forwarded-proto'] = 'https';
+      }
+      next();
+    });
   }
 
   // Static files. Uploads are served as plain files only (never executed).
