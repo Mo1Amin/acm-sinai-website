@@ -63,7 +63,7 @@ npm run dev                 # http://localhost:3000
 5. **Install and set up** — copy the "Enter to the virtual environment" command shown at the top of the Node.js app page, then:
    ```bash
    cd ~/acm-sinai-website
-   npm ci --omit=dev && npm install --no-save tailwindcss@3 && npm run build:css
+   npm ci --omit=dev && npm install --no-save --include=dev tailwindcss@3 && npm run build:css
    npm run migrate
    npm run create-owner -- --email you@example.com --name "Your Name"
    ```
@@ -82,7 +82,7 @@ Manual update from the cPanel terminal:
 
 ```bash
 source /home/suhosting/nodevenv/acm-sinai-website/22/bin/activate
-cd ~/acm-sinai-website && git pull && npm ci --omit=dev && npm install --no-save tailwindcss@3 && npm run build:css && npm run migrate -- --no-seed
+cd ~/acm-sinai-website && git pull && npm ci --omit=dev && npm install --no-save --include=dev tailwindcss@3 && npm run build:css && npm run migrate -- --no-seed
 mkdir -p tmp && touch tmp/restart.txt
 ```
 

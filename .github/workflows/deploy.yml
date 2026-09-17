@@ -54,7 +54,7 @@ jobs:
             cd ~/acm-sinai-website
             git pull --ff-only
             npm ci --omit=dev
-            npm install --no-save tailwindcss@3
+            npm install --no-save --include=dev tailwindcss@3
             npm run build:css
             npm run migrate -- --no-seed
             mkdir -p tmp && touch tmp/restart.txt
