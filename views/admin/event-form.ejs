@@ -19,6 +19,7 @@
             <input class="admin-input" id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp">
             <p class="admin-help">JPG, PNG or WebP up to 12 MB. Resized automatically.</p>
             <label class="flex items-center gap-3 font-semibold text-ink mt-2"><input type="checkbox" name="is_visible" value="1" class="w-5 h-5" <%= (ev.is_visible === undefined || ev.is_visible) ? 'checked' : '' %>> Visible on the site</label>
+            <label class="flex items-center gap-3 font-semibold text-ink"><input type="checkbox" name="is_featured" value="1" class="w-5 h-5" <%= ev.is_featured ? 'checked' : '' %>> Pin to the top 4 on the home page</label>
         </div>
         <button class="admin-btn py-3"><i class="fas fa-check"></i> Save event</button>
     </div>

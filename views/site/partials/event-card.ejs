@@ -1,5 +1,5 @@
-<% const compact = !upcoming; %>
-<article class="glass-card card-hover <%= compact ? 'rounded-2xl md:rounded-[2rem]' : 'rounded-[2rem]' %> overflow-hidden group flex flex-col h-full" data-reveal="toggle" style="--d:<%= ((typeof i === 'number' ? i : 0) % 3) * 90 %>ms">
+<% const compact = !upcoming; const isExtra = typeof extra !== 'undefined' && extra; %>
+<article<%- isExtra ? ' data-more-item' : '' %> class="<%= isExtra ? 'more-hidden ' : '' %>glass-card card-hover <%= compact ? 'rounded-2xl md:rounded-[2rem]' : 'rounded-[2rem]' %> overflow-hidden group flex flex-col h-full" data-reveal="toggle" style="--d:<%= ((typeof i === 'number' ? i : 0) % 3) * 90 %>ms">
     <div class="relative <%= compact ? 'aspect-square md:aspect-video' : 'aspect-video' %> overflow-hidden bg-surface-2">
         <% if (ev.image) { %>
             <img src="<%= asset(ev.image) %>" alt="<%= ev.title %>" width="900" height="506" loading="lazy" class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700">

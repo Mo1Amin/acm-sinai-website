@@ -6,7 +6,7 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ['Outfit', 'sans-serif'],
-        tech: ['Orbitron', 'sans-serif'],
+        tech: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       colors: {
         ink: 'rgb(var(--ink) / <alpha-value>)',

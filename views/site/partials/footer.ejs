@@ -1,30 +1,54 @@
 <%
   const fs = settings || {};
-  const socials = [['facebook_url', 'fa-facebook', 'Facebook'], ['instagram_url', 'fa-instagram', 'Instagram'], ['tiktok_url', 'fa-tiktok', 'TikTok'], ['linkedin_url', 'fa-linkedin', 'LinkedIn']];
+  const socials = [['facebook_url', 'fa-facebook-f', 'Facebook'], ['instagram_url', 'fa-instagram', 'Instagram'], ['tiktok_url', 'fa-tiktok', 'TikTok'], ['linkedin_url', 'fa-linkedin-in', 'LinkedIn']];
+  const onHome = typeof isHome !== 'undefined' && isHome;
+  const links = [['about', 'About'], ['tracks', 'Tracks'], ['events', 'Events'], ['gallery', 'Gallery'], ['team', 'Team'], ['join', 'Join']];
 %>
-<footer class="site-footer mt-10 pt-20 pb-10">
-    <div class="container mx-auto px-6 grid md:grid-cols-3 gap-10 text-center md:text-left">
-        <div class="md:col-span-2 flex flex-col items-center md:items-start">
-            <div class="flex items-center gap-3 mb-5">
-                <img src="/assets/img/logo.webp" alt="" width="40" height="40" class="w-10 h-10" loading="lazy">
-                <span class="font-bold text-xl text-white">Sinai University ACM Student Chapter</span>
+<footer class="site-footer mt-10 pt-16 md:pt-20 pb-8 relative overflow-hidden">
+    <div class="footer-glow" aria-hidden="true"></div>
+    <div class="container mx-auto px-6 relative">
+        <div class="grid grid-cols-2 md:grid-cols-12 gap-x-6 gap-y-10">
+            <div class="col-span-2 md:col-span-5">
+                <a href="/" class="inline-flex items-center gap-3">
+                    <img src="/assets/img/logo.webp" alt="" width="48" height="48" class="w-12 h-12 object-contain" loading="lazy">
+                    <span class="leading-none">
+                        <span class="block font-extrabold text-xl text-white tracking-tight">ACM <span class="text-cyan-300">Sinai</span></span>
+                        <span class="block font-tech text-[10px] uppercase tracking-[0.2em] text-slate-400 mt-1.5">Sinai University Student Chapter</span>
+                    </span>
+                </a>
+                <p class="text-slate-400 mt-5 max-w-sm leading-relaxed">Empowering students to create, innovate, and inspire.</p>
+                <div class="flex gap-2 mt-6">
+                    <% socials.forEach(([key, icon, label]) => { if (fs[key]) { %>
+                        <a href="<%= fs[key] %>" target="_blank" rel="noopener" aria-label="<%= label %>" class="footer-social"><i class="fab <%= icon %>"></i></a>
+                    <% } }) %>
+                </div>
             </div>
-            <p class="text-slate-400 text-lg max-w-md">Empowering students to create, innovate, and inspire.</p>
-        </div>
-        <div class="flex flex-col items-center md:items-start">
-            <h3 class="font-bold text-xl text-white mb-4">Contact</h3>
-            <% if (fs.contact_email) { %>
-                <a href="mailto:<%= fs.contact_email %>" class="flex items-center gap-3 py-2 text-slate-400 hover:text-cyan-300 text-lg"><i class="fas fa-envelope"></i> <%= fs.contact_email %></a>
-            <% } %>
-            <div class="flex gap-2 mt-3">
-                <% socials.forEach(([key, icon, label]) => { if (fs[key]) { %>
-                    <a href="<%= fs[key] %>" target="_blank" rel="noopener" aria-label="<%= label %>" class="w-12 h-12 grid place-items-center rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition"><i class="fab <%= icon %> text-2xl"></i></a>
-                <% } }) %>
+            <div class="md:col-span-3">
+                <h3 class="footer-head">Explore</h3>
+                <ul class="grid gap-2.5">
+                    <% links.forEach(([id, label]) => { %>
+                        <li><a href="<%= onHome ? '#' + id : '/#' + id %>" class="footer-link"><%= label %></a></li>
+                    <% }) %>
+                </ul>
+            </div>
+            <div class="md:col-span-4">
+                <h3 class="footer-head">Get in touch</h3>
+                <ul class="grid gap-3">
+                    <% if (fs.contact_email) { %><li><a href="mailto:<%= fs.contact_email %>" class="footer-link break-all"><i class="fas fa-envelope w-5 text-cyan-300/80"></i> <%= fs.contact_email %></a></li><% } %>
+                    <% if (fs.whatsapp_url) { %><li><a href="<%= fs.whatsapp_url %>" target="_blank" rel="noopener" class="footer-link"><i class="fab fa-whatsapp w-5 text-cyan-300/80"></i> WhatsApp updates</a></li><% } %>
+                    <li><span class="footer-link cursor-default"><i class="fas fa-location-dot w-5 text-cyan-300/80"></i> Sinai University</span></li>
+                </ul>
             </div>
         </div>
-    </div>
-    <div class="container mx-auto px-6 mt-12 pt-8 border-t border-white/10 text-center text-slate-500 text-sm">
-        &copy; <%= new Date().getFullYear() %> Sinai University ACM Student Chapter. All rights reserved.
+
+        <div class="mt-14 pt-6 border-t border-white/10 flex flex-col-reverse md:flex-row items-center justify-between gap-5 text-sm">
+            <p class="text-slate-500 text-center md:text-left">&copy; <%= new Date().getFullYear() %> Sinai University ACM Student Chapter. All rights reserved.</p>
+            <a href="https://github.com/Mo1Amin" target="_blank" rel="noopener author" class="dev-credit" data-click="footer-developer">
+                <span class="dev-credit-mark" aria-hidden="true">&lt;/&gt;</span>
+                <span>Designed &amp; developed by <strong class="whitespace-nowrap">Eng. Mohamed Amin</strong></span>
+                <i class="fab fa-github" aria-hidden="true"></i>
+            </a>
+        </div>
     </div>
 </footer>
 

@@ -117,7 +117,7 @@
       if (lb.last) lb.last.focus();
     };
     document.getElementById('gallery-grid').addEventListener('click', function (e) {
-      var c = e.target.closest('.album-card'); if (c) open(+c.getAttribute('data-album'));
+      var c = e.target.closest('.album-tile'); if (c) open(+c.getAttribute('data-album'));
     });
     lb.thumbs.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) show(+b.getAttribute('data-i')); });
     document.getElementById('lb-close').addEventListener('click', close);
@@ -241,6 +241,45 @@
       if (atEnd()) track.scrollTo({ left: 0 }); else track.scrollBy({ left: stepSize() });
     }, 4200);
   });
+
+  // ---------- "Show more" for events and gallery ----------
+  document.querySelectorAll('[data-more]').forEach(function (btn) {
+    var group = btn.getAttribute('data-more');
+    var list = document.querySelector('[data-more-list="' + group + '"]');
+    if (!list) return;
+    var items = list.querySelectorAll('[data-more-item]');
+    var label = btn.querySelector('span');
+    btn.addEventListener('click', function () {
+      var open = btn.getAttribute('aria-expanded') !== 'true';
+      btn.setAttribute('aria-expanded', String(open));
+      label.textContent = btn.getAttribute(open ? 'data-less-label' : 'data-more-label');
+      items.forEach(function (el, k) {
+        el.classList.toggle('more-hidden', !open);
+        if (open) { el.style.setProperty('--d', (k % 4) * 80 + 'ms'); el.classList.remove('is-in', 'settled'); }
+      });
+      if (!open) list.scrollIntoView({ block: 'nearest' });
+      send('click', 'more:' + group + (open ? ':open' : ':close'));
+    });
+  });
+
+  // ---------- Magnetic buttons (mouse only) ----------
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    document.querySelectorAll('[data-magnetic]').forEach(function (el) {
+      el.addEventListener('pointermove', function (e) {
+        var r = el.getBoundingClientRect();
+        var x = e.clientX - (r.left + r.width / 2), y = e.clientY - (r.top + r.height / 2);
+        el.style.transform = 'translate(' + (x * 0.18).toFixed(1) + 'px,' + (y * 0.28).toFixed(1) + 'px)';
+      });
+      el.addEventListener('pointerleave', function () { el.style.transform = ''; });
+    });
+  }
+
+  // Signature for anyone who opens the console.
+  try {
+    console.log('%c ACM Sinai %c Designed & developed by Eng. Mohamed Amin \u2014 https://github.com/Mo1Amin ',
+      'background:#1866AD;color:#fff;padding:4px 8px;border-radius:4px 0 0 4px;font-weight:700',
+      'background:#0b1220;color:#7dd3fc;padding:4px 8px;border-radius:0 4px 4px 0');
+  } catch (e) {}
 
   // ---------- Particle sphere background (interactive) ----------
   function startSphere() {

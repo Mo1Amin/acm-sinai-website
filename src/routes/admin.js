@@ -214,6 +214,7 @@ router.post(['/events/new', '/events/:id'], need('events'), ...multipart('image'
     register_url: cleanUrl(b.register_url),
     meeting_url: cleanUrl(b.meeting_url),
     is_visible: b.is_visible ? 1 : 0,
+    is_featured: b.is_featured ? 1 : 0,
   };
   const errors = [];
   if (!data.title) errors.push('Title is required.');

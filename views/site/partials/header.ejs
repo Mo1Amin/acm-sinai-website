@@ -25,15 +25,17 @@
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16.png?v=2">
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png?v=2">
-    <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/favicon-48.png?v=2">
-    <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png?v=2">
-    <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png?v=2">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16.png?v=3">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png?v=3">
+    <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/favicon-48.png?v=3">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png?v=3">
+    <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png?v=3">
+    <meta name="author" content="Eng. Mohamed Amin">
+    <link rel="author" href="/humans.txt">
     <script src="/assets/js/theme.js?v=<%= version %>"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/app.css?v=<%= version %>">
 </head>
@@ -52,7 +54,10 @@
     <div class="container mx-auto px-6 py-3 flex justify-between items-center">
         <a href="/" class="flex items-center gap-3 group">
             <img src="/assets/img/logo.webp" alt="ACM Sinai logo" width="40" height="40" class="w-11 h-11 object-contain drop-shadow-md animate-logo-live">
-            <span class="font-tech font-bold text-lg text-ink group-hover:text-brand transition-colors">SU ACM</span>
+            <span class="leading-none">
+                <span class="block font-extrabold text-[17px] md:text-lg tracking-tight text-ink">ACM <span class="text-brand">Sinai</span></span>
+                <span class="block font-tech text-[9.5px] md:text-[10px] uppercase tracking-[0.2em] text-ink-muted mt-1 group-hover:text-brand transition-colors">Student Chapter</span>
+            </span>
         </a>
         <nav class="hidden md:flex items-center gap-7 text-sm font-bold tracking-wide" aria-label="Main">
             <% nav.forEach(([id, label]) => { %>

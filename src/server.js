@@ -61,7 +61,8 @@ function createApp() {
   app.use('/assets', express.static(path.join(config.root, 'public', 'assets'), { maxAge: config.isProd ? '7d' : 0 }));
   app.use('/uploads', express.static(config.uploadsDir, { maxAge: '30d', index: false, dotfiles: 'deny' }));
   app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nDisallow: /admin\nSitemap: ${config.baseUrl}/sitemap.xml\n`));
-  app.get('/favicon.ico', (req, res) => res.type('image/png').set('Cache-Control', 'public, max-age=604800').sendFile(path.join(config.root, 'public', 'assets', 'img', 'favicon-32.png')));
+  app.get('/favicon.ico', (req, res) => res.type('image/x-icon').set('Cache-Control', 'public, max-age=86400').sendFile(path.join(config.root, 'public', 'assets', 'img', 'favicon.ico')));
+  app.get('/humans.txt', (req, res) => res.type('text/plain').send('/* TEAM */\nDesign and development: Eng. Mohamed Amin Abdelwahed Ahmed\nGitHub: https://github.com/Mo1Amin\nRole: Co-founder, Sinai University ACM Student Chapter\n\n/* SITE */\nStack: Node.js, Express, EJS, MariaDB, Tailwind CSS, three.js\n'));
   app.get('/healthz', (req, res) => res.type('text/plain').send('ok'));
 
   // Public site + analytics beacon

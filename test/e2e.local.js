@@ -28,9 +28,13 @@ const check = (name, ok, extra = '') => { results.push([ok ? 'PASS' : 'FAIL', na
   check('home lists 8 tracks', await page.locator('#tracks a[href^="/tracks/"]').count() === 8);
   check('sphere canvas rendered', await page.locator('#canvas-container canvas').count() === 1);
   check('tracks rail scrolls sideways', await page.evaluate(() => { const r = document.querySelector('[data-rail-track]'); return r.scrollWidth > r.clientWidth; }));
-  check('favicon.ico served', (await page.request.get(B + '/favicon.ico')).headers()['content-type'] === 'image/png');
+  check('favicon.ico served', (await page.request.get(B + '/favicon.ico')).headers()['content-type'] === 'image/x-icon');
   await page.screenshot({ path: path.join(shots, 'home-light.png') });
-  await page.click('#gallery .album-card >> nth=1');
+  check('past events: 4 shown, rest behind a button', await page.locator('#events article:visible').count() === 4 && await page.locator('[data-more=events]').count() === 1);
+  await page.click('[data-more=events]');
+  check('show more reveals every past event', await page.locator('#events article:visible').count() === 5);
+  check('developer credit in footer', await page.locator('footer .dev-credit:has-text("Mohamed Amin")').count() === 1);
+  await page.click('#gallery .album-tile >> nth=1');
   await page.waitForTimeout(400);
   check('lightbox opens', !(await page.locator('#lightbox').evaluate((el) => el.classList.contains('lb-hidden'))));
   await page.keyboard.press('Escape');

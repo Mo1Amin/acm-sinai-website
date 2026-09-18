@@ -19,7 +19,8 @@ async function events() {
   const now = nowSql();
   return {
     upcoming: rows.filter((r) => r.starts_at >= now),
-    past: rows.filter((r) => r.starts_at < now).reverse(),
+    // Pinned events lead the list; the rest newest first.
+    past: rows.filter((r) => r.starts_at < now).reverse().sort((a, b) => (b.is_featured || 0) - (a.is_featured || 0)),
   };
 }
 
