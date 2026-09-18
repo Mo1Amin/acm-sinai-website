@@ -13,6 +13,14 @@ function required(name, devDefault) {
 
 const root = path.join(__dirname, '..');
 
+function assetVersion() {
+  const hash = require('crypto').createHash('sha1');
+  for (const f of ['public/assets/css/app.css', 'public/assets/js/site.js', 'public/assets/js/theme.js', 'public/assets/js/admin.js']) {
+    try { hash.update(require('fs').readFileSync(require('path').join(__dirname, '..', f))); } catch (e) { /* not built yet */ }
+  }
+  return hash.digest('hex').slice(0, 10);
+}
+
 module.exports = {
   env,
   isProd,
@@ -29,5 +37,6 @@ module.exports = {
   sessionSecret: required('SESSION_SECRET', 'dev-only-session-secret'),
   analyticsSalt: required('ANALYTICS_SALT', 'dev-only-analytics-salt'),
   uploadsDir: process.env.UPLOADS_DIR || path.join(root, 'public', 'uploads'),
-  version: require('../package.json').version,
+  // Changes whenever a built asset changes, so browsers never keep an old CSS/JS after a deploy.
+  version: assetVersion(),
 };
