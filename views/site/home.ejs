@@ -5,6 +5,12 @@
   const avatar = (p, size) => p.photo
     ? `<img src="${esc(asset(p.photo))}" alt="${esc(p.name)}" loading="lazy" width="160" height="160" class="${size} rounded-full object-cover">`
     : `<div role="img" aria-label="${esc(p.name)}" class="${size} rounded-full grid place-items-center avatar-initials font-black">${esc(initials(p.name))}</div>`;
+  const pop = (p, group) => JSON.stringify({ n: p.name, r: p.role, g: group, p: p.photo ? asset(p.photo) : '', i: initials(p.name), b: p.bio || '', l: p.linkedin_url || '' });
+  const winnerPop = (w, c) => JSON.stringify({
+    n: w.name, r: (w.place === 1 ? 'Champion' : w.place === 2 ? 'Second place' : w.place === 3 ? 'Third place' : 'Place #' + w.place) + ' · ' + c.title,
+    g: formatDate(c.held_on), p: w.photo ? asset(w.photo) : '', i: initials(w.name), b: '', l: '', place: w.place,
+    x: [w.members && ['fa-users', w.members], w.score && ['fa-chart-simple', w.score], w.prize && ['fa-gift', w.prize]].filter(Boolean),
+  });
   const revealOn = s.board_reveal === '1';
   const revealRoles = lines(s.board_reveal_roles);
   const revealDate = s.board_reveal_date ? formatDate(s.board_reveal_date) : '';
@@ -116,6 +122,66 @@
         </div>
     </section>
 
+
+    <!-- WINNERS BOARD -->
+    <% if (competitions.length) { %>
+    <section id="winners" class="py-24 md:py-28 relative" data-section="winners">
+        <div class="container mx-auto px-6">
+            <div class="text-center" data-reveal>
+                <p class="section-kicker">Hall of fame</p>
+                <h2 class="section-title">Winners Board</h2>
+                <p class="mt-4 text-ink-muted max-w-xl mx-auto">Every competition we run, and the people who took it home.</p>
+            </div>
+            <div class="comp-tabs no-scrollbar mt-10" role="tablist" aria-label="Competitions" data-reveal>
+                <% competitions.forEach((c, ci) => { %>
+                    <button type="button" role="tab" id="comp-tab-<%= c.id %>" aria-controls="comp-<%= c.id %>" aria-selected="<%= ci === 0 %>" tabindex="<%= ci === 0 ? 0 : -1 %>" class="comp-tab" data-comp-tab data-click="competition:<%= c.id %>">
+                        <span class="block font-bold leading-tight"><%= c.title %></span>
+                        <span class="block text-[11px] font-tech opacity-75 mt-0.5"><%= formatDate(c.held_on) %></span>
+                    </button>
+                <% }) %>
+            </div>
+            <% competitions.forEach((c, ci) => {
+                 const byPlace = (p) => c.winners.find((w) => w.place === p);
+                 const podium = [2, 1, 3].map(byPlace).filter(Boolean);
+                 const rest = c.winners.filter((w) => w.place > 3 || !podium.includes(w)); %>
+                <div class="comp-panel" role="tabpanel" id="comp-<%= c.id %>" aria-labelledby="comp-tab-<%= c.id %>" <%= ci ? 'hidden' : '' %>>
+                    <div class="text-center mt-8 mb-10">
+                        <% if (c.category) { %><span class="comp-chip"><i class="fas fa-bolt"></i> <%= c.category %></span><% } %>
+                        <% if (c.description) { %><p class="text-ink-muted mt-3 max-w-2xl mx-auto"><%= c.description %></p><% } %>
+                    </div>
+                    <% if (podium.length) { %>
+                        <div class="podium" data-reveal>
+                            <% podium.forEach((w) => { %>
+                                <div class="pod pod-<%= w.place %> pop-trigger" role="button" tabindex="0" data-pop="<%= winnerPop(w, c) %>" aria-label="<%= w.name %>, place <%= w.place %>">
+                                    <div class="pod-avatar">
+                                        <% if (w.place === 1) { %><i class="fas fa-crown pod-crown" aria-hidden="true"></i><% } %>
+                                        <%- avatar(w, 'w-full h-full text-lg md:text-2xl') %>
+                                    </div>
+                                    <div class="pod-name"><%= w.name %></div>
+                                    <% if (w.score) { %><div class="pod-score"><%= w.score %></div><% } %>
+                                    <div class="pod-block"><span><%= w.place %></span></div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } %>
+                    <% if (rest.length) { %>
+                        <div class="max-w-2xl mx-auto mt-8 grid gap-2.5">
+                            <% rest.forEach((w, k) => { %>
+                                <div class="rank-row glass-card pop-trigger" role="button" tabindex="0" data-pop="<%= winnerPop(w, c) %>" data-reveal="toggle" style="--d:<%= (k % 6) * 60 %>ms">
+                                    <span class="rank-num">#<%= w.place %></span>
+                                    <%- avatar(w, 'w-10 h-10 text-xs shrink-0') %>
+                                    <span class="min-w-0 flex-1 text-left"><span class="block font-bold text-ink truncate"><%= w.name %></span><% if (w.members) { %><span class="block text-xs text-ink-muted truncate"><%= w.members %></span><% } %></span>
+                                    <% if (w.score) { %><span class="text-sm font-tech text-brand font-bold shrink-0"><%= w.score %></span><% } %>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } %>
+                </div>
+            <% }) %>
+        </div>
+    </section>
+    <% } %>
+
     <!-- GALLERY -->
     <% if (albums.length) { %>
     <section id="gallery" class="py-24 md:py-28" data-section="gallery">
@@ -126,10 +192,10 @@
               const n = shown.length;
               // Bento spans for the visible albums, by how many there are.
               const span = (i) => {
-                if (n === 1) return 'col-span-2 md:col-span-4 aspect-[16/10] md:aspect-[21/9]';
-                if (n === 2) return 'col-span-2 md:col-span-2 aspect-[16/10] md:aspect-[4/3]';
-                if (n === 3) return i === 0 ? 'col-span-2 md:row-span-2 aspect-[16/10] md:aspect-auto' : 'col-span-1 md:col-span-2 aspect-square md:aspect-auto';
-                return i === 0 ? 'col-span-2 md:row-span-2 aspect-[16/10] md:aspect-auto'
+                if (n === 1) return 'col-span-2 md:col-span-4 aspect-[16/9] md:aspect-[21/8]';
+                if (n === 2) return 'col-span-1 md:col-span-2 aspect-[4/5] md:aspect-[16/10]';
+                if (n === 3) return i === 0 ? 'col-span-2 md:row-span-2 aspect-[16/9] md:aspect-auto' : 'col-span-1 md:col-span-2 aspect-square md:aspect-auto';
+                return i === 0 ? 'col-span-2 md:row-span-2 aspect-[16/9] md:aspect-auto'
                   : i === 1 ? 'col-span-2 aspect-[16/9] md:aspect-auto'
                   : 'col-span-1 aspect-square md:aspect-auto';
               };
@@ -148,8 +214,8 @@
                     </span>
                 </button>`;
             %>
-            <div id="gallery-grid" class="mt-10 md:mt-12">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 <%= n >= 3 ? 'md:grid-rows-2 md:h-[520px]' : '' %>">
+            <div id="gallery-grid" class="mt-10 md:mt-12 max-w-5xl mx-auto">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 <%= n >= 3 ? 'md:grid-rows-2 md:h-[360px] lg:h-[400px]' : '' %>">
                     <% shown.forEach((a, i) => { %><%- tile(a, i, span(i), false) %><% }) %>
                 </div>
                 <% if (albums.length > 4) { %>
@@ -173,7 +239,7 @@
             <h3 class="mt-12 md:mt-16 mb-8 md:mb-10 text-lg md:text-xl font-tech text-brand tracking-[0.3em] font-bold uppercase" data-reveal>High Board</h3>
             <div class="grid grid-cols-2 md:flex md:flex-wrap justify-center gap-4 md:gap-16 max-w-md md:max-w-none mx-auto">
                 <% founders.forEach((p, i) => { %>
-                    <div class="group md:w-48 member" data-reveal="toggle" style="--d:<%= i * 120 %>ms">
+                    <div class="group md:w-48 member pop-trigger" role="button" tabindex="0" data-pop="<%= pop(p, 'High Board') %>" data-reveal="toggle" style="--d:<%= i * 120 %>ms">
                         <div class="w-28 h-28 md:w-40 md:h-40 rounded-full p-1 md:p-1.5 avatar-ring mx-auto mb-3 md:mb-4 overflow-hidden"><%- avatar(p, 'w-full h-full group-hover:scale-110 transition-transform duration-500 text-3xl') %></div>
                         <h4 class="text-base md:text-2xl font-bold text-ink leading-tight"><%= p.name %></h4>
                         <p class="text-xs md:text-sm text-brand font-extrabold uppercase tracking-wider mt-1"><%= p.role %></p>
@@ -183,7 +249,7 @@
             <% } %>
 
             <% sponsors.forEach((p) => { %>
-                <div class="mt-10 md:mt-12 inline-flex items-center gap-4 md:gap-5 glass-card rounded-3xl px-4 md:px-6 py-3 md:py-4 text-left member max-w-full" data-reveal="toggle">
+                <div class="mt-10 md:mt-12 inline-flex items-center gap-4 md:gap-5 glass-card rounded-3xl px-4 md:px-6 py-3 md:py-4 text-left member max-w-full pop-trigger" role="button" tabindex="0" data-pop="<%= pop(p, 'Faculty Sponsor') %>" data-reveal="toggle">
                     <%- avatar(p, 'w-16 h-16 md:w-20 md:h-20 text-xl') %>
                     <div><h4 class="font-bold text-ink text-base md:text-xl"><%= p.name %></h4><p class="text-[11px] md:text-sm text-brand font-extrabold uppercase tracking-wider mt-1"><%= p.role %></p></div>
                 </div>
@@ -197,7 +263,7 @@
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto mt-10">
                     <% revealRoles.forEach((role, i) => { %>
-                        <div class="glass-card rounded-3xl p-5 md:p-6 mystery-card" data-reveal="toggle" data-tilt style="--d:<%= (i % 4) * 80 %>ms">
+                        <div class="glass-card rounded-3xl p-5 md:p-6 mystery-card pop-trigger" role="button" tabindex="0" data-pop="<%= JSON.stringify({ n: 'Revealing soon', r: role, g: 'New board', m: 1, i: '?' }) %>" data-reveal="toggle" data-tilt style="--d:<%= (i % 4) * 80 %>ms">
                             <div class="mystery-avatar w-16 h-16 md:w-24 md:h-24 mx-auto mb-4"><i class="fas fa-question"></i></div>
                             <div class="mystery-name mx-auto" aria-hidden="true"></div>
                             <p class="text-[11px] md:text-xs text-brand font-extrabold uppercase tracking-wider mt-3"><%= role %></p>
@@ -209,7 +275,7 @@
                 <h3 class="mt-20 mb-10 text-lg font-tech text-ink-muted tracking-widest uppercase" data-reveal>Current Board</h3>
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto">
                     <% board.forEach((p, i) => { %>
-                        <div class="glass-card card-hover rounded-3xl p-5 md:p-6 member" data-reveal="toggle" style="--d:<%= (i % 4) * 80 %>ms">
+                        <div class="glass-card card-hover rounded-3xl p-5 md:p-6 member pop-trigger" role="button" tabindex="0" data-pop="<%= pop(p, 'Current Board') %>" data-reveal="toggle" style="--d:<%= (i % 4) * 80 %>ms">
                             <div class="mb-4"><%- avatar(p, 'w-16 h-16 md:w-24 md:h-24 mx-auto text-xl md:text-2xl') %></div>
                             <h4 class="font-bold text-ink text-sm md:text-lg"><%= p.name %></h4>
                             <p class="text-[11px] md:text-xs text-ink-muted font-bold uppercase mt-1"><%= p.role %></p>
@@ -223,7 +289,7 @@
                 <p class="text-ink-muted mb-8" data-reveal>The founding board, still here to guide the new team.</p>
                 <div class="flex flex-wrap justify-center gap-2 md:gap-4 max-w-5xl mx-auto advisory-cloud">
                     <% advisors.forEach((p, i) => { %>
-                        <div class="glass-card rounded-full pl-1 md:pl-1.5 pr-3 md:pr-5 py-1 md:py-1.5 flex items-center gap-2 md:gap-3 text-left member" data-reveal="toggle" style="--d:<%= (i % 6) * 60 %>ms">
+                        <div class="glass-card rounded-full pl-1 md:pl-1.5 pr-3 md:pr-5 py-1 md:py-1.5 flex items-center gap-2 md:gap-3 text-left member pop-trigger" role="button" tabindex="0" data-pop="<%= pop(p, 'Advisory Board') %>" data-reveal="toggle" style="--d:<%= (i % 6) * 60 %>ms">
                             <%- avatar(p, 'w-8 h-8 md:w-11 md:h-11 text-[11px] md:text-sm') %>
                             <div><div class="font-bold text-ink text-[11.5px] md:text-sm leading-tight whitespace-nowrap"><%= p.name %></div><div class="text-[9px] md:text-[11px] text-brand font-semibold uppercase leading-tight mt-0.5 whitespace-nowrap"><%= p.role %></div></div>
                         </div>
@@ -246,7 +312,7 @@
                     <% if (registrationOpen) { %>
                         <a href="<%= s.registration_url %>" target="_blank" rel="noopener" data-click="join-register" class="btn-light text-lg"><i class="fas fa-pen-to-square"></i> Register Now</a>
                     <% } else { %>
-                        <div class="btn-light opacity-80 cursor-default text-lg"><i class="fas fa-bell"></i> Registration opens soon</div>
+                        <div class="btn-soon btn-soon-dark text-lg"><i class="fas fa-bell"></i> Registration opens soon</div>
                     <% } %>
                     <% if (s.whatsapp_url) { %>
                         <a href="<%= s.whatsapp_url %>" target="_blank" rel="noopener" data-click="join-whatsapp" class="btn-ghost-light text-lg"><i class="fab fa-whatsapp"></i> WhatsApp Updates</a>

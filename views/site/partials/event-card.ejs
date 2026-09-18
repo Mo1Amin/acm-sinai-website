@@ -18,7 +18,7 @@
                 <% if (ev.register_url) { %>
                     <a href="<%= ev.register_url %>" target="_blank" rel="noopener" data-click="event-register:<%= ev.id %>" class="btn-primary">Register Now</a>
                 <% } else { %>
-                    <div class="btn-muted">Registration opens soon</div>
+                    <div class="btn-soon w-full justify-center"><i class="fas fa-bell"></i> Registration opens soon</div>
                 <% } %>
                 <% if (ev.meeting_url) { %>
                     <a href="<%= ev.meeting_url %>" target="_blank" rel="noopener" data-click="event-meeting:<%= ev.id %>" class="btn-outline">Join Meeting</a>

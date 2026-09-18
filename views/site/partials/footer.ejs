@@ -2,7 +2,7 @@
   const fs = settings || {};
   const socials = [['facebook_url', 'fa-facebook-f', 'Facebook'], ['instagram_url', 'fa-instagram', 'Instagram'], ['tiktok_url', 'fa-tiktok', 'TikTok'], ['linkedin_url', 'fa-linkedin-in', 'LinkedIn']];
   const onHome = typeof isHome !== 'undefined' && isHome;
-  const links = [['about', 'About'], ['tracks', 'Tracks'], ['events', 'Events'], ['gallery', 'Gallery'], ['team', 'Team'], ['join', 'Join']];
+  const links = [['about', 'About'], ['tracks', 'Tracks'], ['events', 'Events'], ...(locals.competitions && locals.competitions.length ? [['winners', 'Winners']] : []), ['gallery', 'Gallery'], ['team', 'Team'], ['join', 'Join']];
 %>
 <footer class="site-footer mt-10 pt-16 md:pt-20 pb-8 relative overflow-hidden">
     <div class="footer-glow" aria-hidden="true"></div>
@@ -51,6 +51,23 @@
         </div>
     </div>
 </footer>
+
+<div id="pop" class="pop-hidden" role="dialog" aria-modal="true" aria-labelledby="pop-name">
+    <div class="pop-backdrop" data-pop-close></div>
+    <div class="pop-card">
+        <div class="pop-banner" aria-hidden="true"></div>
+        <button type="button" class="pop-close" data-pop-close aria-label="Close"><i class="fas fa-xmark"></i></button>
+        <div class="pop-avatar" id="pop-avatar"></div>
+        <div class="px-6 pb-7 text-center">
+            <span class="pop-group" id="pop-group"></span>
+            <h3 id="pop-name" class="text-2xl font-black text-ink mt-3 leading-tight"></h3>
+            <p id="pop-role" class="text-brand font-bold mt-1"></p>
+            <p id="pop-bio" class="text-ink-muted mt-3 text-sm leading-relaxed"></p>
+            <ul id="pop-extra" class="mt-4 grid gap-2 text-left"></ul>
+            <a id="pop-link" href="#" target="_blank" rel="noopener" class="btn-primary mt-5 !py-3 px-5 text-sm"><i class="fab fa-linkedin-in"></i> LinkedIn</a>
+        </div>
+    </div>
+</div>
 
 <div id="lightbox" class="lb-hidden fixed inset-0 z-[80] bg-slate-950 flex flex-col" role="dialog" aria-modal="true" aria-label="Photo viewer">
     <div class="flex items-center justify-between px-4 md:px-8 py-4 text-white">

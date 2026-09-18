@@ -1,0 +1,20 @@
+<%- include('partials/top') %>
+<a href="/admin/competitions/<%= comp.id %>" class="inline-flex items-center gap-2 text-ink-muted hover:text-brand font-semibold mb-4"><i class="fas fa-arrow-left"></i> <%= comp.title %></a>
+<form method="post" action="/admin/competitions/<%= comp.id %>/winners/<%= w.id %>" enctype="multipart/form-data" class="admin-card max-w-2xl grid sm:grid-cols-2 gap-4">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <% if (errors.length) { %><div class="sm:col-span-2 rounded-xl bg-rose-500/10 text-rose-600 text-sm p-3" role="alert"><% errors.forEach((e) => { %><div><%= e %></div><% }) %></div><% } %>
+    <div><label class="admin-label" for="place">Place</label><input class="admin-input" id="place" name="place" type="number" min="1" max="999" required value="<%= w.place %>"></div>
+    <div><label class="admin-label" for="name">Name (person or team)</label><input class="admin-input" id="name" name="name" required maxlength="160" value="<%= w.name %>"></div>
+    <div class="sm:col-span-2"><label class="admin-label" for="members">Team members (optional)</label><input class="admin-input" id="members" name="members" maxlength="300" value="<%= w.members || '' %>"></div>
+    <div><label class="admin-label" for="score">Score (optional)</label><input class="admin-input" id="score" name="score" maxlength="60" value="<%= w.score || '' %>"></div>
+    <div><label class="admin-label" for="prize">Prize (optional)</label><input class="admin-input" id="prize" name="prize" maxlength="120" value="<%= w.prize || '' %>"></div>
+    <div class="sm:col-span-2">
+        <label class="admin-label" for="photo">Photo</label>
+        <div class="flex items-center gap-4">
+            <% if (w.photo) { %><img src="<%= asset(w.photo) %>" alt="" class="w-16 h-16 rounded-full object-cover"><label class="text-sm text-ink-muted flex items-center gap-2"><input type="checkbox" name="remove_photo" value="1"> Remove photo (show initials)</label><% } %>
+        </div>
+        <input class="admin-input mt-2" id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp">
+    </div>
+    <button class="admin-btn sm:col-span-2 py-3"><i class="fas fa-check"></i> Save</button>
+</form>
+<%- include('partials/bottom') %>

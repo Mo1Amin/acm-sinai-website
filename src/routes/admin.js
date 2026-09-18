@@ -380,6 +380,7 @@ router.post(['/people/new', '/people/:id'], need('people'), ...multipart('photo'
   const data = {
     name: str(b.name, 120),
     role: str(b.role, 120),
+    bio: str(b.bio, 300) || null,
     grp: Object.keys(GROUPS).includes(b.grp) ? b.grp : 'board',
     linkedin_url: cleanUrl(b.linkedin_url),
     is_visible: b.is_visible ? 1 : 0,
@@ -405,6 +406,150 @@ router.post(['/people/new', '/people/:id'], need('people'), ...multipart('photo'
   }
   flash(req, 'ok', 'Saved.');
   res.redirect('/admin/people');
+}));
+
+// ---------------------------------------------------------------- competitions (winners board)
+const isDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(String(v || ''));
+
+function competitionData(b) {
+  const data = {
+    title: str(b.title, 160),
+    category: str(b.category, 80) || null,
+    held_on: isDate(b.held_on) ? b.held_on : null,
+    description: str(b.description, 1000) || null,
+    is_visible: b.is_visible ? 1 : 0,
+  };
+  const errors = [];
+  if (!data.title) errors.push('Title is required.');
+  if (!data.held_on) errors.push('Date is required.');
+  return { data, errors };
+}
+
+function winnerData(b) {
+  const data = {
+    place: Math.min(999, Math.max(1, int(b.place, 1))),
+    name: str(b.name, 160),
+    members: str(b.members, 300) || null,
+    score: str(b.score, 60) || null,
+    prize: str(b.prize, 120) || null,
+  };
+  const errors = [];
+  if (!data.name) errors.push('Winner name is required.');
+  return { data, errors };
+}
+
+async function loadCompetition(req, res) {
+  const comp = await db.one('SELECT * FROM competitions WHERE id = ?', [int(req.params.id)]);
+  if (!comp) { flash(req, 'error', 'Competition not found.'); res.redirect('/admin/competitions'); return null; }
+  return comp;
+}
+
+async function renderCompetition(res, comp, extra = {}) {
+  const winners = await db.all('SELECT * FROM competition_winners WHERE competition_id = ? ORDER BY place, id', [comp.id]);
+  res.render('admin/competition', { title: comp.title, comp, winners, errors: [], winnerErrors: [], draft: {}, ...extra });
+}
+
+router.get('/competitions', need('competitions'), wrap(async (req, res) => {
+  const list = await db.all(`SELECT c.*, (SELECT COUNT(*) FROM competition_winners w WHERE w.competition_id = c.id) AS winner_count
+                               FROM competitions c ORDER BY c.held_on DESC, c.id DESC`);
+  res.render('admin/competitions', { title: 'Winners board', list, errors: [], draft: { is_visible: 1 } });
+}));
+
+router.post('/competitions', need('competitions'), wrap(async (req, res) => {
+  const { data, errors } = competitionData(req.body);
+  if (errors.length) {
+    const list = await db.all('SELECT c.*, 0 AS winner_count FROM competitions c ORDER BY c.held_on DESC, c.id DESC');
+    return res.status(422).render('admin/competitions', { title: 'Winners board', list, errors, draft: data });
+  }
+  const id = await db.insert('competitions', data);
+  await auth.audit(req, 'create', 'competition', id, `Added competition "${data.title}" (${data.held_on})`);
+  flash(req, 'ok', 'Competition added. Now add its winners.');
+  res.redirect(`/admin/competitions/${id}`);
+}));
+
+router.get('/competitions/:id', need('competitions'), wrap(async (req, res) => {
+  const comp = await loadCompetition(req, res);
+  if (comp) await renderCompetition(res, comp);
+}));
+
+router.post('/competitions/:id', need('competitions'), wrap(async (req, res) => {
+  const comp = await loadCompetition(req, res);
+  if (!comp) return;
+  const { data, errors } = competitionData(req.body);
+  if (errors.length) return renderCompetition(res.status(422), { ...comp, ...data }, { errors });
+  await db.update('competitions', data, comp.id);
+  await auth.audit(req, 'update', 'competition', comp.id, `Edited competition "${data.title}"`);
+  flash(req, 'ok', 'Saved.');
+  res.redirect(`/admin/competitions/${comp.id}`);
+}));
+
+router.post('/competitions/:id/action', need('competitions'), wrap(async (req, res) => {
+  const comp = await loadCompetition(req, res);
+  if (!comp) return;
+  const action = str(req.body.action, 20);
+  if (action === 'toggle') {
+    await db.run('UPDATE competitions SET is_visible = 1 - is_visible WHERE id = ?', [comp.id]);
+    await auth.audit(req, 'update', 'competition', comp.id, `${comp.is_visible ? 'Hid' : 'Showed'} competition "${comp.title}"`);
+    return res.redirect('/admin/competitions');
+  }
+  if (action === 'delete') {
+    const photos = await db.all('SELECT photo FROM competition_winners WHERE competition_id = ?', [comp.id]);
+    await db.run('DELETE FROM competitions WHERE id = ?', [comp.id]);
+    for (const p of photos) await deleteUpload(p.photo);
+    await auth.audit(req, 'delete', 'competition', comp.id, `Deleted competition "${comp.title}" and its ${photos.length} winners`);
+    flash(req, 'ok', 'Competition deleted.');
+  }
+  res.redirect('/admin/competitions');
+}));
+
+router.post('/competitions/:id/winners', need('competitions'), ...multipart('photo'), wrap(async (req, res) => {
+  const comp = await loadCompetition(req, res);
+  if (!comp) return;
+  const { data, errors } = winnerData(req.body);
+  if (!errors.length && req.file) {
+    try { data.photo = (await storeImage(req.file, 'winners', { maxSide: 480, thumbSide: null, square: true })).file; } catch (e) { errors.push(e.message); }
+  }
+  if (errors.length) return renderCompetition(res.status(422), comp, { winnerErrors: errors, draft: data });
+  data.competition_id = comp.id;
+  const id = await db.insert('competition_winners', data);
+  await auth.audit(req, 'create', 'winner', id, `Added #${data.place} ${data.name} to "${comp.title}"`);
+  flash(req, 'ok', `${data.name} added.`);
+  res.redirect(`/admin/competitions/${comp.id}`);
+}));
+
+router.get('/competitions/:id/winners/:wid', need('competitions'), wrap(async (req, res) => {
+  const comp = await loadCompetition(req, res);
+  if (!comp) return;
+  const w = await db.one('SELECT * FROM competition_winners WHERE id = ? AND competition_id = ?', [int(req.params.wid), comp.id]);
+  if (!w) { flash(req, 'error', 'Winner not found.'); return res.redirect(`/admin/competitions/${comp.id}`); }
+  res.render('admin/winner-form', { title: `Edit ${w.name}`, comp, w, errors: [] });
+}));
+
+router.post('/competitions/:id/winners/:wid', need('competitions'), ...multipart('photo'), wrap(async (req, res) => {
+  const comp = await loadCompetition(req, res);
+  if (!comp) return;
+  const w = await db.one('SELECT * FROM competition_winners WHERE id = ? AND competition_id = ?', [int(req.params.wid), comp.id]);
+  if (!w) { flash(req, 'error', 'Winner not found.'); return res.redirect(`/admin/competitions/${comp.id}`); }
+  if (req.body.action === 'delete') {
+    await db.run('DELETE FROM competition_winners WHERE id = ?', [w.id]);
+    await deleteUpload(w.photo);
+    await auth.audit(req, 'delete', 'winner', w.id, `Removed ${w.name} from "${comp.title}"`);
+    flash(req, 'ok', 'Winner removed.');
+    return res.redirect(`/admin/competitions/${comp.id}`);
+  }
+  const { data, errors } = winnerData(req.body);
+  if (!errors.length && req.file) {
+    try { data.photo = (await storeImage(req.file, 'winners', { maxSide: 480, thumbSide: null, square: true })).file; } catch (e) { errors.push(e.message); }
+  }
+  if (errors.length) return res.status(422).render('admin/winner-form', { title: `Edit ${w.name}`, comp, w: { ...w, ...data }, errors });
+  if (data.photo || req.body.remove_photo) {
+    await deleteUpload(w.photo);
+    if (!data.photo) data.photo = null;
+  }
+  await db.update('competition_winners', data, w.id);
+  await auth.audit(req, 'update', 'winner', w.id, `Edited #${data.place} ${data.name} in "${comp.title}"`);
+  flash(req, 'ok', 'Saved.');
+  res.redirect(`/admin/competitions/${comp.id}`);
 }));
 
 // ---------------------------------------------------------------- settings

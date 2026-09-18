@@ -4,7 +4,7 @@
   const description = locals.pageDescription || 'The official ACM Student Chapter at Sinai University. Specialized tracks, mentorship, exclusive courses, competitions, and training opportunities for computing students.';
   const canonical = baseUrl + (locals.canonicalPath || '/');
   const onHome = !!locals.isHome;
-  const nav = [['about', 'About'], ['tracks', 'Tracks'], ['events', 'Events'], ['gallery', 'Gallery'], ['team', 'Team'], ['join', 'Join']];
+  const nav = [['about', 'About'], ['tracks', 'Tracks'], ['events', 'Events'], ...(locals.competitions && locals.competitions.length ? [['winners', 'Winners']] : []), ['gallery', 'Gallery'], ['team', 'Team'], ['join', 'Join']];
   const navHref = (id) => (onHome ? '#' + id : '/#' + id);
 %><!DOCTYPE html>
 <html lang="en" class="scroll-smooth">

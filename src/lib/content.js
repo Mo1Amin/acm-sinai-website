@@ -44,8 +44,21 @@ async function albums() {
   return withPhotos;
 }
 
+/** Visible competitions, newest first, each with its winners ranked by place. */
+async function competitions() {
+  const list = await db.all('SELECT * FROM competitions WHERE is_visible = 1 ORDER BY held_on DESC, id DESC');
+  if (!list.length) return [];
+  const ids = list.map((c) => c.id);
+  const winners = await db.all(
+    `SELECT * FROM competition_winners WHERE competition_id IN (${ids.map(() => '?').join(',')}) ORDER BY place, id`,
+    ids
+  );
+  for (const c of list) c.winners = winners.filter((w) => w.competition_id === c.id);
+  return list.filter((c) => c.winners.length);
+}
+
 function people(grp) {
   return db.all('SELECT * FROM people WHERE grp = ? AND is_visible = 1 ORDER BY sort_order, id', [grp]);
 }
 
-module.exports = { settings, tracks, track, events, albums, people };
+module.exports = { settings, tracks, track, events, albums, people, competitions };

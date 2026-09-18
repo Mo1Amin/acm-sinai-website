@@ -140,6 +140,36 @@ const check = (name, ok, extra = '') => { results.push([ok ? 'PASS' : 'FAIL', na
   const teaserHome = await (await page.request.get(B + '/')).text();
   check('new board hidden while teaser is on', !teaserHome.includes('New Chair') && (teaserHome.match(/mystery-card/g) || []).length === 8);
 
+  // ---- winners board: competition + ranked winners, podium and profile card on the site
+  await page.goto(B + '/admin/competitions');
+  await page.fill('#title', 'Spring Coding Cup');
+  await page.fill('#held_on', '2026-04-20');
+  await page.fill('#category', 'Problem solving');
+  await page.click('button:has-text("Add competition")');
+  await page.waitForURL(/\/admin\/competitions\/\d+$/);
+  for (const [place, name, score] of [['1', 'Team Alpha', '10 solved'], ['2', 'Team Beta', '8 solved'], ['3', 'Team Gamma', '7 solved'], ['4', 'Team Delta', '5 solved']]) {
+    await page.fill('#place', place);
+    await page.fill('#name', name);
+    await page.fill('#score', score);
+    if (place === '1') await page.setInputFiles('#photo', img);
+    await page.click('button:has-text("Add winner")');
+    await page.waitForLoadState('networkidle');
+  }
+  check('4 winners saved', await page.locator('text=Team Delta').count() >= 1 && await page.locator('a[aria-label=Edit]').count() === 4);
+  await page.goto(B + '/', { waitUntil: 'networkidle' });
+  check('podium shows top 3, list shows the rest', await page.locator('.podium .pod').count() === 3 && await page.locator('.rank-row:has-text("Team Delta")').count() === 1);
+  await page.locator('.pod-1').scrollIntoViewIfNeeded();
+  await page.click('.pod-1');
+  await page.waitForTimeout(500);
+  check('winner card opens, no empty LinkedIn button', !(await page.locator('#pop').evaluate((el) => el.classList.contains('pop-hidden')))
+    && (await page.locator('#pop-name').textContent()) === 'Team Alpha' && !(await page.locator('#pop-link').isVisible()));
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(450);
+  await page.click('#team .pop-trigger >> nth=0');
+  await page.waitForTimeout(500);
+  check('member card opens with name and role', (await page.locator('#pop-name').textContent()).length > 2 && (await page.locator('#pop-role').textContent()) === 'Founder');
+  await page.keyboard.press('Escape');
+
   // ---- settings: open registration
   await page.goto(B + '/admin/settings');
   await page.check('input[name=registration_open]');
@@ -181,6 +211,8 @@ const check = (name, ok, extra = '') => { results.push([ok ? 'PASS' : 'FAIL', na
   check('editor blocked from admins page', await ep.locator('text=You don\'t have access').count() === 1);
   await ep.goto(B + '/admin/tracks');
   check('editor blocked from tracks', await ep.locator('text=You don\'t have access').count() === 1);
+  await ep.goto(B + '/admin/competitions');
+  check('editor can manage the winners board', await ep.locator('text=Spring Coding Cup').count() === 1);
   await ed.close();
 
   // ---- lockout after 5 wrong passwords

@@ -1,0 +1,37 @@
+<%- include('partials/top') %>
+<p class="text-ink-muted mb-5">Each competition keeps its date and its own ranked winners. The site shows the newest first, with a podium for the top three.</p>
+<div class="grid lg:grid-cols-3 gap-4 items-start">
+    <section class="admin-card lg:col-span-2">
+        <h2 class="font-bold text-ink mb-3">Competitions <span class="text-sm text-ink-muted font-normal"><%= list.length %></span></h2>
+        <% if (!list.length) { %><p class="text-ink-muted text-sm py-3">No competitions yet. Add the first one on the right.</p><% } %>
+        <div class="flex flex-col">
+            <% list.forEach((c) => { const action = `/admin/competitions/${c.id}/action`; %>
+                <div class="flex items-center gap-3 py-3 border-b last:border-0" style="border-color: rgb(var(--line) / .06)">
+                    <div class="w-11 h-11 rounded-xl grid place-items-center shrink-0 bg-amber-400/15 text-amber-500"><i class="fas fa-trophy"></i></div>
+                    <a href="/admin/competitions/<%= c.id %>" class="min-w-0 flex-1 group">
+                        <div class="font-semibold text-ink truncate group-hover:text-brand"><%= c.title %></div>
+                        <div class="text-sm text-ink-muted truncate"><%= formatDate(c.held_on) %><%= c.category ? ' · ' + c.category : '' %> · <%= c.winner_count %> winner<%= Number(c.winner_count) === 1 ? '' : 's' %></div>
+                    </a>
+                    <% if (!c.is_visible) { %><span class="admin-pill bg-slate-500/10 text-slate-500"><i class="fas fa-eye-slash"></i> Hidden</span><% } %>
+                    <% if (c.is_visible && !Number(c.winner_count)) { %><span class="admin-pill bg-amber-500/10 text-amber-600">No winners yet</span><% } %>
+                    <form method="post" action="<%= action %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="action" value="toggle" class="w-9 h-9 rounded-lg hover:bg-surface-2" aria-label="<%= c.is_visible ? 'Hide' : 'Show' %>"><i class="fas <%= c.is_visible ? 'fa-eye-slash' : 'fa-eye' %>"></i></button></form>
+                    <a href="/admin/competitions/<%= c.id %>" class="w-9 h-9 grid place-items-center rounded-lg hover:bg-surface-2" aria-label="Edit"><i class="fas fa-pen"></i></a>
+                    <form method="post" action="<%= action %>" data-confirm="Delete <%= c.title %> and all its winners?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="action" value="delete" class="w-9 h-9 rounded-lg hover:bg-rose-500/10 text-rose-600" aria-label="Delete"><i class="fas fa-trash"></i></button></form>
+                </div>
+            <% }) %>
+        </div>
+    </section>
+
+    <form method="post" action="/admin/competitions" class="admin-card flex flex-col gap-4">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <h2 class="font-bold text-ink">Add a competition</h2>
+        <% if (errors.length) { %><div class="rounded-xl bg-rose-500/10 text-rose-600 text-sm p-3" role="alert"><% errors.forEach((e) => { %><div><%= e %></div><% }) %></div><% } %>
+        <div><label class="admin-label" for="title">Title</label><input class="admin-input" id="title" name="title" required maxlength="160" value="<%= draft.title || '' %>" placeholder="ACM Sinai Coding Cup 2026"></div>
+        <div><label class="admin-label" for="held_on">Date</label><input class="admin-input" id="held_on" name="held_on" type="date" required value="<%= draft.held_on || '' %>"></div>
+        <div><label class="admin-label" for="category">Category (optional)</label><input class="admin-input" id="category" name="category" maxlength="80" value="<%= draft.category || '' %>" placeholder="Problem solving, UI/UX, Hackathon..."></div>
+        <div><label class="admin-label" for="description">Short description (optional)</label><textarea class="admin-input min-h-[80px]" id="description" name="description" maxlength="1000"><%= draft.description || '' %></textarea></div>
+        <label class="flex items-center gap-3 font-semibold text-ink"><input type="checkbox" name="is_visible" value="1" class="w-5 h-5" <%= draft.is_visible ? 'checked' : '' %>> Visible on the site</label>
+        <button class="admin-btn py-3"><i class="fas fa-plus"></i> Add competition</button>
+    </form>
+</div>
+<%- include('partials/bottom') %>

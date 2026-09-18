@@ -11,6 +11,7 @@
             <% Object.entries(groups).forEach(([k, l]) => { %><option value="<%= k %>" <%= p.grp === k ? 'selected' : '' %>><%= l %></option><% }) %>
         </select>
     </div>
+    <div class="sm:col-span-2"><label class="admin-label" for="bio">Short bio (optional)</label><input class="admin-input" id="bio" name="bio" maxlength="300" value="<%= p.bio || '' %>" placeholder="One line shown in the profile card on the site"></div>
     <div><label class="admin-label" for="linkedin_url">LinkedIn (optional)</label><input class="admin-input" id="linkedin_url" name="linkedin_url" type="url" maxlength="500" value="<%= p.linkedin_url || '' %>"></div>
     <div class="sm:col-span-2">
         <label class="admin-label" for="photo">Photo</label>

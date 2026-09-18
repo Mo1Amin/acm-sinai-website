@@ -262,9 +262,109 @@
     });
   });
 
+  // ---------- Winners board tabs ----------
+  var compTabs = document.querySelectorAll('[data-comp-tab]');
+  function selectComp(tab, focus) {
+    compTabs.forEach(function (t) {
+      var on = t === tab;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+      var panel = document.getElementById(t.getAttribute('aria-controls'));
+      if (panel) panel.hidden = !on;
+      if (on && panel) {
+        // Replay the podium rising for the newly shown competition.
+        var podium = panel.querySelector('.podium');
+        if (podium) { podium.classList.remove('is-in'); void podium.offsetWidth; podium.classList.add('is-in'); }
+      }
+    });
+    if (focus) tab.focus();
+    tab.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+  }
+  compTabs.forEach(function (t, i) {
+    t.addEventListener('click', function () { selectComp(t); });
+    t.addEventListener('keydown', function (e) {
+      var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      selectComp(compTabs[(i + d + compTabs.length) % compTabs.length], true);
+    });
+  });
+
+  // ---------- Profile card popup (members, board, winners) ----------
+  var popEl = document.getElementById('pop');
+  if (popEl) {
+    var popCard = popEl.querySelector('.pop-card');
+    var popLast = null;
+    var el = function (id) { return document.getElementById(id); };
+    function openPop(trigger) {
+      var d;
+      try { d = JSON.parse(trigger.getAttribute('data-pop')); } catch (e) { return; }
+      popLast = trigger;
+      var av = el('pop-avatar');
+      av.innerHTML = '';
+      var inner;
+      if (d.m) { inner = document.createElement('div'); inner.className = 'pop-mystery'; inner.textContent = '?'; }
+      else if (d.p) { inner = document.createElement('img'); inner.src = d.p; inner.alt = d.n; }
+      else { inner = document.createElement('div'); inner.className = 'pop-initials'; inner.textContent = d.i || ''; }
+      av.appendChild(inner);
+      el('pop-group').textContent = d.g || '';
+      el('pop-group').hidden = !d.g;
+      el('pop-name').textContent = d.n || '';
+      el('pop-role').textContent = d.r || '';
+      el('pop-bio').textContent = d.m ? 'This seat is taken. The name drops soon, so stay close.' : (d.b || '');
+      el('pop-bio').hidden = !(d.m || d.b);
+      var ul = el('pop-extra');
+      ul.innerHTML = '';
+      (d.x || []).forEach(function (row) {
+        var li = document.createElement('li');
+        var ic = document.createElement('i'); ic.className = 'fas ' + row[0];
+        var tx = document.createElement('span'); tx.textContent = row[1];
+        li.appendChild(ic); li.appendChild(tx); ul.appendChild(li);
+      });
+      ul.hidden = !ul.children.length;
+      var link = el('pop-link');
+      var safe = /^https?:\/\//i.test(d.l || '');
+      link.hidden = !safe;
+      if (safe) link.href = d.l;
+      popCard.classList.toggle('is-gold', d.place === 1);
+      popCard.classList.toggle('is-silver', d.place === 2);
+      popCard.classList.toggle('is-bronze', d.place === 3);
+      // Grow the card out of the element that was clicked.
+      var r = trigger.getBoundingClientRect();
+      popCard.style.setProperty('--ox', (r.left + r.width / 2 - window.innerWidth / 2 + popCard.offsetWidth / 2) + 'px');
+      popCard.style.setProperty('--oy', (r.top + r.height / 2 - window.innerHeight / 2 + popCard.offsetHeight / 2) + 'px');
+      popEl.classList.remove('pop-hidden');
+      document.body.classList.add('pop-open');
+      popEl.querySelector('.pop-close').focus();
+      send('click', 'profile:' + (d.n || ''));
+    }
+    function closePop() {
+      if (popEl.classList.contains('pop-hidden')) return;
+      popEl.classList.add('pop-hidden');
+      document.body.classList.remove('pop-open');
+      if (popLast) popLast.focus({ preventScroll: true });
+    }
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('[data-pop-close]')) return closePop();
+      var t = e.target.closest('.pop-trigger');
+      if (t && !e.target.closest('a')) openPop(t);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') return closePop();
+      var t = e.target.closest && e.target.closest('.pop-trigger');
+      if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openPop(t); }
+      if (e.key === 'Tab' && !popEl.classList.contains('pop-hidden')) {
+        var f = popEl.querySelectorAll('button, a:not([hidden])');
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+  }
+
   // ---------- Magnetic buttons (mouse only) ----------
   if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    document.querySelectorAll('[data-magnetic]').forEach(function (el) {
+    document.querySelectorAll('[data-magnetic], .btn-primary, .btn-outline, .btn-light, .btn-ghost-light, .btn-more, .btn-soon').forEach(function (el) {
       el.addEventListener('pointermove', function (e) {
         var r = el.getBoundingClientRect();
         var x = e.clientX - (r.left + r.width / 2), y = e.clientY - (r.top + r.height / 2);

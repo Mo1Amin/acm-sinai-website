@@ -14,8 +14,8 @@ const MAX_FAILS_PER_IP = 20;
 /** Role -> permissions. Owners (founders) can do everything, including managing admins. */
 const ROLE_PERMISSIONS = {
   owner: ['*'],
-  admin: ['dashboard', 'analytics', 'tracks', 'events', 'gallery', 'people', 'settings', 'logs'],
-  editor: ['dashboard', 'events', 'gallery'],
+  admin: ['dashboard', 'analytics', 'tracks', 'events', 'gallery', 'people', 'competitions', 'settings', 'logs'],
+  editor: ['dashboard', 'events', 'gallery', 'competitions'],
 };
 const ROLE_LABELS = { owner: 'Owner (Founder)', admin: 'Admin', editor: 'Editor' };
 

@@ -1,0 +1,51 @@
+<%- include('partials/top') %>
+<% const c = comp; const medal = (p) => p === 1 ? 'bg-amber-400/20 text-amber-600' : p === 2 ? 'bg-slate-400/20 text-slate-500' : p === 3 ? 'bg-orange-400/20 text-orange-600' : 'bg-surface-2 text-ink-muted'; %>
+<a href="/admin/competitions" class="inline-flex items-center gap-2 text-ink-muted hover:text-brand font-semibold mb-4"><i class="fas fa-arrow-left"></i> Winners board</a>
+<div class="grid lg:grid-cols-3 gap-4 items-start">
+    <div class="lg:col-span-2 flex flex-col gap-4">
+        <section class="admin-card">
+            <h2 class="font-bold text-ink mb-3">Winners <span class="text-sm text-ink-muted font-normal"><%= winners.length %></span></h2>
+            <% if (!winners.length) { %><p class="text-ink-muted text-sm py-3">No winners yet. Add them below; places 1 to 3 appear on the podium.</p><% } %>
+            <div class="flex flex-col">
+                <% winners.forEach((w) => { %>
+                    <div class="flex items-center gap-3 py-2.5 border-b last:border-0" style="border-color: rgb(var(--line) / .06)">
+                        <span class="w-9 h-9 rounded-full grid place-items-center font-black text-sm shrink-0 <%= medal(w.place) %>"><%= w.place %></span>
+                        <% if (w.photo) { %><img src="<%= asset(w.photo) %>" alt="" class="w-11 h-11 rounded-full object-cover shrink-0"><% } else { %><div class="w-11 h-11 rounded-full grid place-items-center avatar-initials text-sm font-black shrink-0"><%= initials(w.name) %></div><% } %>
+                        <div class="min-w-0 flex-1">
+                            <div class="font-semibold text-ink truncate"><%= w.name %></div>
+                            <div class="text-sm text-ink-muted truncate"><%= [w.members, w.score, w.prize].filter(Boolean).join(' · ') || '—' %></div>
+                        </div>
+                        <a href="/admin/competitions/<%= c.id %>/winners/<%= w.id %>" class="w-9 h-9 grid place-items-center rounded-lg hover:bg-surface-2" aria-label="Edit"><i class="fas fa-pen"></i></a>
+                        <form method="post" action="/admin/competitions/<%= c.id %>/winners/<%= w.id %>" enctype="multipart/form-data" data-confirm="Remove <%= w.name %>?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="action" value="delete" class="w-9 h-9 rounded-lg hover:bg-rose-500/10 text-rose-600" aria-label="Remove"><i class="fas fa-trash"></i></button></form>
+                    </div>
+                <% }) %>
+            </div>
+        </section>
+
+        <form method="post" action="/admin/competitions/<%= c.id %>/winners" enctype="multipart/form-data" class="admin-card grid sm:grid-cols-2 gap-4">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <h2 class="font-bold text-ink sm:col-span-2">Add a winner</h2>
+            <% if (winnerErrors.length) { %><div class="sm:col-span-2 rounded-xl bg-rose-500/10 text-rose-600 text-sm p-3" role="alert"><% winnerErrors.forEach((e) => { %><div><%= e %></div><% }) %></div><% } %>
+            <div><label class="admin-label" for="place">Place</label><input class="admin-input" id="place" name="place" type="number" min="1" max="999" required value="<%= draft.place || (winners.length ? Math.max(...winners.map((w) => w.place)) + 1 : 1) %>"></div>
+            <div><label class="admin-label" for="name">Name (person or team)</label><input class="admin-input" id="name" name="name" required maxlength="160" value="<%= draft.name || '' %>"></div>
+            <div class="sm:col-span-2"><label class="admin-label" for="members">Team members (optional)</label><input class="admin-input" id="members" name="members" maxlength="300" value="<%= draft.members || '' %>" placeholder="Ali, Sara, Omar"></div>
+            <div><label class="admin-label" for="score">Score (optional)</label><input class="admin-input" id="score" name="score" maxlength="60" value="<%= draft.score || '' %>" placeholder="9 problems · 1240 pts"></div>
+            <div><label class="admin-label" for="prize">Prize (optional)</label><input class="admin-input" id="prize" name="prize" maxlength="120" value="<%= draft.prize || '' %>" placeholder="Certificate + 3,000 EGP"></div>
+            <div class="sm:col-span-2"><label class="admin-label" for="photo">Photo (optional)</label><input class="admin-input" id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp"><p class="admin-help">Cropped to a square around the face automatically.</p></div>
+            <button class="admin-btn sm:col-span-2 py-3"><i class="fas fa-plus"></i> Add winner</button>
+        </form>
+    </div>
+
+    <form method="post" action="/admin/competitions/<%= c.id %>" class="admin-card flex flex-col gap-4">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <h2 class="font-bold text-ink">Competition details</h2>
+        <% if (errors.length) { %><div class="rounded-xl bg-rose-500/10 text-rose-600 text-sm p-3" role="alert"><% errors.forEach((e) => { %><div><%= e %></div><% }) %></div><% } %>
+        <div><label class="admin-label" for="c-title">Title</label><input class="admin-input" id="c-title" name="title" required maxlength="160" value="<%= c.title %>"></div>
+        <div><label class="admin-label" for="c-held">Date</label><input class="admin-input" id="c-held" name="held_on" type="date" required value="<%= String(c.held_on || '').slice(0, 10) %>"></div>
+        <div><label class="admin-label" for="c-cat">Category (optional)</label><input class="admin-input" id="c-cat" name="category" maxlength="80" value="<%= c.category || '' %>"></div>
+        <div><label class="admin-label" for="c-desc">Short description (optional)</label><textarea class="admin-input min-h-[80px]" id="c-desc" name="description" maxlength="1000"><%= c.description || '' %></textarea></div>
+        <label class="flex items-center gap-3 font-semibold text-ink"><input type="checkbox" name="is_visible" value="1" class="w-5 h-5" <%= c.is_visible ? 'checked' : '' %>> Visible on the site</label>
+        <button class="admin-btn py-3"><i class="fas fa-check"></i> Save details</button>
+    </form>
+</div>
+<%- include('partials/bottom') %>
