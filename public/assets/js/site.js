@@ -274,7 +274,8 @@
       base[i + 2] = pos[i + 2] = r * Math.cos(ph);
     }
     var sGeo = new THREE.BufferGeometry(); sGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    var sMat = new THREE.PointsMaterial({ size: small ? 0.13 : 0.1, map: dot, transparent: true, depthWrite: false });
+    var baseSize = small ? 0.15 : 0.12;
+    var sMat = new THREE.PointsMaterial({ size: baseSize, map: dot, transparent: true, depthWrite: false });
     var sphere = new THREE.Points(sGeo, sMat); scene.add(sphere);
 
     var starCount = small ? 500 : 1000;
@@ -290,9 +291,9 @@
         sMat.blending = THREE.AdditiveBlending; sMat.color.setHex(0x00d4ff); sMat.opacity = 0.85;
         tMat.color.setHex(0xffffff); tMat.opacity = 0.3;
       } else {
-        // Softer on light backgrounds so it does not compete with the text.
-        sMat.blending = THREE.NormalBlending; sMat.color.setHex(0x3b82f6); sMat.opacity = 0.4;
-        tMat.color.setHex(0x64748b); tMat.opacity = 0.25;
+        // Deeper blue on light backgrounds so the dots read against the pale page.
+        sMat.blending = THREE.NormalBlending; sMat.color.setHex(0x1d5fb8); sMat.opacity = 0.7;
+        tMat.color.setHex(0x3b6ea8); tMat.opacity = 0.35;
       }
       sMat.needsUpdate = true; tMat.needsUpdate = true;
     }
@@ -342,7 +343,7 @@
         pos[p] = bx * s; pos[p + 1] = by * s; pos[p + 2] = bz * s;
       }
       sGeo.attributes.position.needsUpdate = true;
-      sMat.size = (small ? 0.13 : 0.1) * (1 + pulse * 0.6);
+      sMat.size = baseSize * (1 + pulse * 0.6);
       renderer.render(scene, camera);
       requestAnimationFrame(loop);
     }

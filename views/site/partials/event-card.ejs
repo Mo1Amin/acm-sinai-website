@@ -1,17 +1,18 @@
-<article class="glass-card card-hover rounded-[2rem] overflow-hidden group flex flex-col h-full" data-reveal="toggle" style="--d:<%= ((typeof i === 'number' ? i : 0) % 3) * 90 %>ms">
-    <div class="relative aspect-video overflow-hidden bg-surface-2">
+<% const compact = !upcoming; %>
+<article class="glass-card card-hover <%= compact ? 'rounded-2xl md:rounded-[2rem]' : 'rounded-[2rem]' %> overflow-hidden group flex flex-col h-full" data-reveal="toggle" style="--d:<%= ((typeof i === 'number' ? i : 0) % 3) * 90 %>ms">
+    <div class="relative <%= compact ? 'aspect-square md:aspect-video' : 'aspect-video' %> overflow-hidden bg-surface-2">
         <% if (ev.image) { %>
             <img src="<%= asset(ev.image) %>" alt="<%= ev.title %>" width="900" height="506" loading="lazy" class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700">
         <% } else { %>
             <div class="w-full h-full grid place-items-center text-5xl text-brand/40"><i class="fas fa-calendar-days"></i></div>
         <% } %>
-        <div class="absolute top-4 right-4 chip-date"><%= formatDate(ev.starts_at) %></div>
-        <% if (!upcoming) { %><div class="absolute top-4 left-4 chip-ended">Ended</div><% } %>
+        <div class="absolute <%= compact ? 'top-2 right-2 md:top-4 md:right-4 chip-date chip-sm' : 'top-4 right-4 chip-date' %>"><%= formatDate(ev.starts_at) %></div>
+        <% if (!upcoming) { %><div class="absolute top-4 left-4 chip-ended hidden md:block">Ended</div><% } %>
     </div>
-    <div class="p-7 flex-grow flex flex-col">
-        <h3 class="text-xl font-bold mb-2 text-ink leading-tight"><%= ev.title %></h3>
-        <% if (ev.location) { %><p class="text-sm text-ink-muted mb-2"><i class="fas fa-location-dot mr-1"></i><%= ev.location %></p><% } %>
-        <p class="text-ink-muted text-sm line-clamp-3"><%= ev.description %></p>
+    <div class="<%= compact ? 'p-3 md:p-7' : 'p-7' %> flex-grow flex flex-col">
+        <h3 class="<%= compact ? 'text-sm md:text-xl' : 'text-xl' %> font-bold mb-1 md:mb-2 text-ink leading-tight"><%= ev.title %></h3>
+        <% if (ev.location) { %><p class="text-sm text-ink-muted mb-2 <%= compact ? 'hidden md:block' : '' %>"><i class="fas fa-location-dot mr-1"></i><%= ev.location %></p><% } %>
+        <p class="text-ink-muted text-sm line-clamp-3 <%= compact ? 'hidden md:block' : '' %>"><%= ev.description %></p>
         <% if (upcoming) { %>
             <div class="mt-auto pt-6 flex flex-col gap-3">
                 <% if (ev.register_url) { %>
