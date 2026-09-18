@@ -61,6 +61,7 @@ function createApp() {
   app.use('/assets', express.static(path.join(config.root, 'public', 'assets'), { maxAge: config.isProd ? '7d' : 0 }));
   app.use('/uploads', express.static(config.uploadsDir, { maxAge: '30d', index: false, dotfiles: 'deny' }));
   app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nDisallow: /admin\nSitemap: ${config.baseUrl}/sitemap.xml\n`));
+  app.get('/favicon.ico', (req, res) => res.type('image/png').set('Cache-Control', 'public, max-age=604800').sendFile(path.join(config.root, 'public', 'assets', 'img', 'favicon-32.png')));
   app.get('/healthz', (req, res) => res.type('text/plain').send('ok'));
 
   // Public site + analytics beacon

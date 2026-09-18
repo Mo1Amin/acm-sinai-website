@@ -27,6 +27,8 @@ const check = (name, ok, extra = '') => { results.push([ok ? 'PASS' : 'FAIL', na
   check('home shows hero', await page.locator('h1:has-text("Future")').count() === 1);
   check('home lists 8 tracks', await page.locator('#tracks a[href^="/tracks/"]').count() === 8);
   check('sphere canvas rendered', await page.locator('#canvas-container canvas').count() === 1);
+  check('tracks rail scrolls sideways', await page.evaluate(() => { const r = document.querySelector('[data-rail-track]'); return r.scrollWidth > r.clientWidth; }));
+  check('favicon.ico served', (await page.request.get(B + '/favicon.ico')).headers()['content-type'] === 'image/png');
   await page.screenshot({ path: path.join(shots, 'home-light.png') });
   await page.click('#gallery .album-card >> nth=1');
   await page.waitForTimeout(400);
@@ -131,14 +133,18 @@ const check = (name, ok, extra = '') => { results.push([ok ? 'PASS' : 'FAIL', na
   await page.fill('#role', 'Chair');
   await page.click('button:has-text("Save")');
   await page.waitForURL(/\/admin\/people$/);
-  check('board member added', (await (await page.request.get(B + '/')).text()).includes('New Chair'));
+  const teaserHome = await (await page.request.get(B + '/')).text();
+  check('new board hidden while teaser is on', !teaserHome.includes('New Chair') && (teaserHome.match(/mystery-card/g) || []).length === 8);
 
   // ---- settings: open registration
   await page.goto(B + '/admin/settings');
   await page.check('input[name=registration_open]');
+  await page.uncheck('input[name=board_reveal]');
   await page.click('button:has-text("Save settings")');
   await page.waitForLoadState('networkidle');
-  check('registration opened on home', (await (await page.request.get(B + '/')).text()).includes('data-click="join-register"'));
+  const openHome = await (await page.request.get(B + '/')).text();
+  check('registration opened on home', openHome.includes('data-click="join-register"'));
+  check('board shown after teaser off', openHome.includes('New Chair') && !openHome.includes('mystery-card'));
 
   // ---- users: add editor, editor permissions
   await page.goto(B + '/admin/users');

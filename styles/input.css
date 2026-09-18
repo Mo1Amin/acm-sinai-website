@@ -126,9 +126,74 @@
 #lb-image { transition: opacity .2s ease; }
 body.lb-open { overflow: hidden; }
 
+/* ---------- Motion ---------- */
+/* Scroll reveal: elements start hidden only once JS has marked the page (html.js-motion),
+   so the content is always visible without JavaScript. */
+.js-motion [data-reveal] {
+  opacity: 0; transform: translateY(34px) scale(.97);
+  transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1);
+  transition-delay: var(--d, 0ms);
+}
+.js-motion [data-reveal].is-in { opacity: 1; transform: none; }
+.js-motion [data-reveal].settled { transition-delay: 0ms; }
+.js-motion [data-reveal].card-hover.is-in:hover { transform: translateY(-6px); }
+/* Cards leaving the screen fade and sink a little, then come back when scrolled to again. */
+.js-motion [data-reveal="toggle"].is-out-up { opacity: 0; transform: translateY(-26px) scale(.96); transition-delay: 0ms; }
+.js-motion .tracks-rail [data-reveal] { transform: translateX(60px) rotate(1.5deg); }
+.js-motion .tracks-rail [data-reveal].is-in { transform: none; }
+
+.hero-line { opacity: 0; transform: translateY(26px); filter: blur(6px); animation: heroIn .9s cubic-bezier(.2,.7,.2,1) forwards; animation-delay: var(--d, 0ms); }
+.hero-logo > div { animation: logoIn 1.2s cubic-bezier(.2,.7,.2,1) backwards .2s; }
+@keyframes heroIn { to { opacity: 1; transform: none; filter: none; } }
+@keyframes logoIn { from { opacity: 0; transform: scale(.8) rotate(-8deg); } to { opacity: 1; transform: none; } }
+
+.grow-bar { transform-origin: center; }
+.js-motion [data-reveal] .grow-bar { transform: scaleX(0); transition: transform .9s cubic-bezier(.2,.7,.2,1) .25s; }
+.js-motion [data-reveal].is-in .grow-bar { transform: scaleX(1); }
+
+[data-tilt] { transform-style: preserve-3d; will-change: transform; }
+.tilting { transition: transform .12s ease-out !important; }
+
+.scroll-cue { position: absolute; left: 50%; bottom: 28px; width: 26px; height: 42px; margin-left: -13px; border-radius: 14px; border: 2px solid rgb(var(--ink-muted) / .5); justify-content: center; }
+.scroll-cue span { width: 4px; height: 8px; margin-top: 8px; border-radius: 2px; background: rgb(var(--brand)); animation: cue 1.8s ease-in-out infinite; }
+@keyframes cue { 0% { opacity: 0; transform: translateY(0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(14px); } }
+
+/* ---------- Tracks rail (original horizontal cards) ---------- */
+.tracks-rail { --fade: 48px; }
+.rail-track { cursor: grab; scroll-behavior: smooth; -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent); mask-image: linear-gradient(90deg, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent); }
+.rail-track.dragging { cursor: grabbing; scroll-behavior: auto; scroll-snap-type: none; }
+.rail-track.dragging a { pointer-events: none; }
+.track-card { transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s ease, opacity .7s ease; user-select: none; }
+.track-card:hover { box-shadow: 0 2px 4px rgba(15,23,42,.05), 0 24px 50px rgb(var(--brand) / .18); }
+.dark .track-card.border-t-8 { border-top-color: transparent; }
+.dark .track-card:hover { box-shadow: 0 24px 50px rgba(0,0,0,.45), 0 0 0 1px rgb(var(--brand) / .35); }
+.track-icon { transition: transform .45s cubic-bezier(.34,1.56,.64,1); }
+.track-card:hover .track-icon { transform: translateY(-4px) rotate(-8deg) scale(1.08); }
+.track-more i { transition: transform .3s ease; }
+.track-card:hover .track-more i { transform: translateX(5px); }
+.rail-btn { position: absolute; top: 50%; z-index: 5; width: 48px; height: 48px; margin-top: -30px; border-radius: 9999px; display: none; place-items: center; background: rgb(var(--surface)); color: rgb(var(--brand)); border: 1px solid rgb(var(--line) / .1); box-shadow: 0 8px 24px rgba(15,23,42,.12); transition: transform .2s ease, opacity .2s ease; }
+.rail-btn:hover { transform: scale(1.08); }
+.rail-btn[disabled] { opacity: 0; pointer-events: none; }
+.rail-prev { left: -8px; } .rail-next { right: -8px; }
+@media (min-width: 768px) { .rail-btn { display: grid; } }
+
+/* ---------- New board teaser ---------- */
+.reveal-chip { @apply inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest; background: rgb(var(--brand-soft)); color: rgb(var(--brand)); animation: chipPulse 2.4s ease-in-out infinite; }
+@keyframes chipPulse { 0%, 100% { box-shadow: 0 0 0 0 rgb(var(--brand) / .35); } 50% { box-shadow: 0 0 0 10px rgb(var(--brand) / 0); } }
+.mystery-card { position: relative; overflow: hidden; }
+.mystery-card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgb(var(--brand) / .12) 50%, transparent 70%); transform: translateX(-100%); animation: sweep 3.2s ease-in-out infinite; animation-delay: var(--d, 0ms); pointer-events: none; }
+@keyframes sweep { 60%, 100% { transform: translateX(100%); } }
+.mystery-avatar { @apply rounded-full grid place-items-center text-2xl md:text-4xl font-black; background: repeating-linear-gradient(135deg, rgb(var(--surface-2)), rgb(var(--surface-2)) 8px, rgb(var(--brand-soft)) 8px, rgb(var(--brand-soft)) 16px); color: rgb(var(--brand)); border: 2px dashed rgb(var(--brand) / .45); }
+.mystery-avatar i { animation: wobble 3s ease-in-out infinite; animation-delay: var(--d, 0ms); }
+@keyframes wobble { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-14deg); } 40% { transform: rotate(10deg); } 60% { transform: rotate(0); } }
+.mystery-name { width: 70%; height: 14px; border-radius: 7px; background: rgb(var(--ink-muted) / .22); filter: blur(1px); }
+.mystery-card:hover .mystery-avatar { border-style: solid; }
+
+/* Reduced motion: keep the life in the page, just calmer and shorter. */
 @media (prefers-reduced-motion: reduce) {
-  .animate-float, .animate-logo-live, .animate-pulse, .animate-fade-in-up { animation: none !important; }
-  .animate-fade-in-up { opacity: 1 !important; }
+  .js-motion [data-reveal] { transition-duration: .45s; }
+  .js-motion [data-reveal]:not(.is-in) { transform: translateY(12px); }
+  .hero-line { animation-duration: .6s; filter: none; }
 }
 
 /* ============ Admin ============ */

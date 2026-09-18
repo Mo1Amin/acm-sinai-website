@@ -413,6 +413,7 @@ const SETTING_FIELDS = [
   ['registration_url', 'Membership registration link', 500, 'url'], ['whatsapp_url', 'WhatsApp link', 500, 'url'],
   ['contact_email', 'Contact email', 190, 'email'],
   ['facebook_url', 'Facebook', 500, 'url'], ['instagram_url', 'Instagram', 500, 'url'], ['tiktok_url', 'TikTok', 500, 'url'], ['linkedin_url', 'LinkedIn', 500, 'url'],
+  ['board_reveal_title', 'Teaser headline', 120], ['board_reveal_roles', 'Seats to tease (one per line)', 1000],
 ];
 
 router.get('/settings', need('settings'), wrap(async (req, res) => {
@@ -430,6 +431,8 @@ router.post('/settings', need('settings'), wrap(async (req, res) => {
     values[key] = v;
   }
   values.registration_open = req.body.registration_open ? '1' : '0';
+  values.board_reveal = req.body.board_reveal ? '1' : '0';
+  values.board_reveal_date = /^\d{4}-\d{2}-\d{2}$/.test(String(req.body.board_reveal_date || '')) ? req.body.board_reveal_date : '';
   values.analytics_retention_days = String(Math.min(730, Math.max(30, int(req.body.analytics_retention_days, 365))));
   if (errors.length) return res.status(422).render('admin/settings', { title: 'Site settings', values, fields: SETTING_FIELDS, errors });
   for (const [k, v] of Object.entries(values)) {

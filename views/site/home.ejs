@@ -5,45 +5,49 @@
   const avatar = (p, size) => p.photo
     ? `<img src="${esc(asset(p.photo))}" alt="${esc(p.name)}" loading="lazy" width="160" height="160" class="${size} rounded-full object-cover">`
     : `<div role="img" aria-label="${esc(p.name)}" class="${size} rounded-full grid place-items-center avatar-initials font-black">${esc(initials(p.name))}</div>`;
+  const revealOn = s.board_reveal === '1';
+  const revealRoles = lines(s.board_reveal_roles);
+  const revealDate = s.board_reveal_date ? formatDate(s.board_reveal_date) : '';
 %>
 <main class="pt-20">
 
     <!-- HERO -->
     <section class="min-h-[88vh] md:min-h-screen flex items-center relative overflow-hidden" data-section="hero">
         <div class="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
-            <div class="z-10 animate-fade-in-up text-center md:text-left mt-10 md:mt-0">
-                <span class="text-brand font-tech tracking-[0.2em] text-sm font-bold uppercase mb-3 block"><%= s.hero_kicker %></span>
+            <div class="z-10 text-center md:text-left mt-10 md:mt-0 hero-copy">
+                <span class="hero-line text-brand font-tech tracking-[0.2em] text-sm font-bold uppercase mb-3 block" style="--d:0ms"><%= s.hero_kicker %></span>
                 <h1 class="hover-heading text-5xl md:text-8xl font-black text-ink mb-6 leading-tight">
-                    <%= s.hero_line1 || 'Build The' %><br>
-                    <span class="text-gradient"><%= s.hero_line2 || 'Future' %></span>
+                    <span class="hero-line inline-block" style="--d:120ms"><%= s.hero_line1 || 'Build The' %></span><br>
+                    <span class="hero-line inline-block text-gradient" style="--d:260ms"><%= s.hero_line2 || 'Future' %></span>
                 </h1>
-                <p class="text-lg md:text-xl text-ink-soft mb-10 max-w-lg leading-relaxed mx-auto md:mx-0 font-medium"><%= s.hero_text %></p>
-                <div class="flex flex-wrap gap-3 justify-center md:justify-start">
+                <p class="hero-line text-lg md:text-xl text-ink-soft mb-10 max-w-lg leading-relaxed mx-auto md:mx-0 font-medium" style="--d:420ms"><%= s.hero_text %></p>
+                <div class="hero-line flex flex-wrap gap-3 justify-center md:justify-start" style="--d:560ms">
                     <a href="#join" data-click="hero-join" class="btn-primary px-10 text-lg">Join Chapter</a>
                     <a href="#tracks" data-click="hero-tracks" class="btn-outline px-8 text-lg">Explore Tracks</a>
                 </div>
             </div>
-            <div class="flex justify-center animate-float z-0">
-                <div class="relative w-64 h-64 md:w-[480px] md:h-[480px]">
+            <div class="flex justify-center animate-float z-0 hero-logo">
+                <div class="relative w-64 h-64 md:w-[480px] md:h-[480px]" data-tilt>
                     <div class="absolute inset-0 hero-glow rounded-full blur-3xl opacity-30 animate-pulse"></div>
                     <img src="/assets/img/logo.webp" alt="" width="480" height="480" class="w-full h-full object-contain drop-shadow-2xl relative z-10 animate-logo-live">
                 </div>
             </div>
         </div>
+        <a href="#about" class="scroll-cue hidden md:flex" aria-label="Scroll down"><span></span></a>
     </section>
 
     <!-- ABOUT -->
     <section id="about" class="py-24 md:py-28 relative" data-section="about">
         <div class="container mx-auto px-6 grid md:grid-cols-2 gap-14 items-center">
-            <div>
+            <div data-reveal>
                 <p class="section-kicker">Who we are</p>
                 <h2 class="text-4xl md:text-5xl font-black text-ink">A community that builds.</h2>
                 <p class="mt-6 text-lg md:text-xl text-ink-soft leading-relaxed"><%= s.about_text %></p>
             </div>
             <div class="grid grid-cols-2 gap-4 md:gap-5">
-                <div class="glass-card rounded-3xl p-6 md:p-8"><div class="stat-number">1947</div><div class="stat-label">ACM founded</div></div>
-                <div class="glass-card rounded-3xl p-6 md:p-8"><div class="stat-number">~100K</div><div class="stat-label">members worldwide</div></div>
-                <div class="glass-card rounded-3xl p-6 md:p-8 col-span-2 flex items-center gap-5">
+                <div class="glass-card rounded-3xl p-6 md:p-8" data-reveal style="--d:80ms"><div class="stat-number" data-count="1947">1947</div><div class="stat-label">ACM founded</div></div>
+                <div class="glass-card rounded-3xl p-6 md:p-8" data-reveal style="--d:180ms"><div class="stat-number"><span data-count="100">100</span>K+</div><div class="stat-label">members worldwide</div></div>
+                <div class="glass-card rounded-3xl p-6 md:p-8 col-span-2 flex items-center gap-5" data-reveal style="--d:280ms">
                     <div class="icon-tile w-14 h-14 text-2xl shrink-0"><i class="fas fa-trophy"></i></div>
                     <div><div class="text-xl md:text-2xl font-black text-ink">A.M. Turing Award</div><div class="text-ink-muted font-medium">ACM's award, known as the "Nobel Prize of Computing"</div></div>
                 </div>
@@ -51,24 +55,34 @@
         </div>
     </section>
 
-    <!-- TRACKS -->
+    <!-- TRACKS (horizontal cards, like the original site) -->
     <section id="tracks" class="py-24 md:py-28 relative" data-section="tracks">
         <div class="container mx-auto px-6">
-            <div class="text-center mb-14">
+            <div class="text-center mb-12" data-reveal>
                 <h2 class="hover-heading text-4xl md:text-5xl font-black mb-4 text-ink">Our Tracks</h2>
-                <div class="w-24 h-1.5 bg-brand mx-auto rounded-full"></div>
-                <p class="mt-6 text-lg text-ink-muted font-medium max-w-2xl mx-auto">Specialized teams in every computing field, each guided by experienced mentors.</p>
+                <div class="w-24 h-1.5 bg-brand mx-auto rounded-full grow-bar"></div>
+                <p class="mt-6 text-lg text-ink-muted font-medium max-w-2xl mx-auto">Pick the field you love. Each track is a small team with a mentor who has done it before.</p>
             </div>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                <% tracks.forEach((t) => { const st = trackStatus(t.status); %>
-                    <a href="/tracks/<%= t.slug %>" data-click="track:<%= t.slug %>" class="glass-card card-hover rounded-3xl p-5 md:p-8 flex flex-col">
-                        <div class="icon-tile w-12 h-12 md:w-16 md:h-16 text-xl md:text-3xl mb-4 md:mb-6"><i class="fas <%= t.icon %>"></i></div>
-                        <h3 class="text-base md:text-xl font-bold text-ink leading-tight"><%= t.name %></h3>
-                        <p class="hidden sm:block mt-2 text-ink-muted text-sm font-medium"><%= t.short_desc %></p>
-                        <span class="status-badge status-<%= st.key %> mt-4 self-start"><span class="dot"></span><%= st.label %></span>
-                    </a>
-                <% }) %>
+            <div class="tracks-rail relative" data-rail>
+                <button type="button" class="rail-btn rail-prev" data-rail-prev aria-label="Previous tracks"><i class="fas fa-chevron-left"></i></button>
+                <div class="flex overflow-x-auto gap-6 md:gap-8 pb-12 pt-6 no-scrollbar snap-x snap-mandatory px-4 rail-track" data-rail-track>
+                    <% tracks.forEach((t, i) => { const st = trackStatus(t.status); const featured = i % 3 === 1; %>
+                        <a href="/tracks/<%= t.slug %>" data-click="track:<%= t.slug %>" draggable="false"
+                           class="track-card min-w-[270px] md:min-w-[340px] max-w-[340px] glass-card p-8 md:p-10 rounded-[2rem] snap-center flex flex-col <%= featured ? 'border-2 border-brand' : 'border-t-8 border-t-brand' %>"
+                           data-reveal="toggle" data-tilt style="--d:<%= Math.min(i, 4) * 90 %>ms">
+                            <div class="w-16 h-16 bg-brand-soft rounded-2xl flex items-center justify-center mb-6 text-brand text-3xl shadow-sm track-icon"><i class="fas <%= t.icon %>"></i></div>
+                            <h3 class="text-2xl font-bold mb-3 text-ink"><%= t.name %></h3>
+                            <p class="text-ink-muted text-base font-medium"><%= t.short_desc %></p>
+                            <div class="mt-auto pt-6 flex items-center justify-between gap-3">
+                                <span class="status-badge status-<%= st.key %>"><span class="dot"></span><%= st.label %></span>
+                                <span class="text-brand font-bold text-sm track-more">Explore <i class="fas fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                    <% }) %>
+                </div>
+                <button type="button" class="rail-btn rail-next" data-rail-next aria-label="Next tracks"><i class="fas fa-chevron-right"></i></button>
             </div>
+            <p class="text-center text-sm text-ink-muted -mt-4 md:hidden"><i class="fas fa-hand-pointer mr-1"></i> Swipe to see all tracks</p>
         </div>
     </section>
 
@@ -77,18 +91,16 @@
         <div class="container mx-auto px-6">
             <% if (events.upcoming.length) { %>
                 <div class="mb-20">
-                    <p class="section-kicker text-center">Don't miss it</p>
-                    <h2 class="section-title">Upcoming Events</h2>
+                    <div data-reveal><p class="section-kicker text-center">Don't miss it</p><h2 class="section-title">Upcoming Events</h2></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-                        <% events.upcoming.forEach((ev) => { %><%- include('partials/event-card', { ev, upcoming: true }) %><% }) %>
+                        <% events.upcoming.forEach((ev, i) => { %><%- include('partials/event-card', { ev, upcoming: true, i }) %><% }) %>
                     </div>
                 </div>
             <% } %>
-            <p class="section-kicker text-center">What we have done</p>
-            <h2 class="section-title">Past Events</h2>
+            <div data-reveal><p class="section-kicker text-center">What we have done</p><h2 class="section-title">Past Events</h2></div>
             <% if (events.past.length) { %>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-                    <% events.past.forEach((ev) => { %><%- include('partials/event-card', { ev, upcoming: false }) %><% }) %>
+                    <% events.past.forEach((ev, i) => { %><%- include('partials/event-card', { ev, upcoming: false, i }) %><% }) %>
                 </div>
             <% } else { %>
                 <p class="text-center text-ink-muted mt-8">Events will appear here soon.</p>
@@ -100,11 +112,10 @@
     <% if (albums.length) { %>
     <section id="gallery" class="py-24 md:py-28" data-section="gallery">
         <div class="container mx-auto px-6">
-            <p class="section-kicker text-center">Moments</p>
-            <h2 class="section-title">Gallery</h2>
+            <div data-reveal><p class="section-kicker text-center">Moments</p><h2 class="section-title">Gallery</h2></div>
             <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
                 <% albums.forEach((a, i) => { %>
-                    <button type="button" data-album="<%= i %>" class="album-card text-left glass-card card-hover rounded-[2rem] overflow-hidden group">
+                    <button type="button" data-album="<%= i %>" class="album-card text-left glass-card card-hover rounded-[2rem] overflow-hidden group" data-reveal="toggle" style="--d:<%= (i % 3) * 90 %>ms">
                         <div class="relative aspect-[4/3] overflow-hidden bg-surface-2">
                             <img src="<%= a.cover %>" alt="<%= a.title %>" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent"></div>
@@ -125,14 +136,13 @@
     <!-- TEAM -->
     <section id="team" class="py-24 md:py-28 section-tint" data-section="team">
         <div class="container mx-auto px-6 text-center">
-            <p class="section-kicker">The people behind it</p>
-            <h2 class="section-title">Leadership Team</h2>
+            <div data-reveal><p class="section-kicker">The people behind it</p><h2 class="section-title">Leadership Team</h2></div>
 
             <% if (founders.length) { %>
-            <h3 class="mt-16 mb-10 text-xl font-tech text-brand tracking-[0.3em] font-bold uppercase">High Board</h3>
+            <h3 class="mt-16 mb-10 text-xl font-tech text-brand tracking-[0.3em] font-bold uppercase" data-reveal>High Board</h3>
             <div class="flex flex-wrap justify-center gap-8 md:gap-16">
-                <% founders.forEach((p) => { %>
-                    <div class="group w-40 md:w-48">
+                <% founders.forEach((p, i) => { %>
+                    <div class="group w-40 md:w-48 member" data-reveal="toggle" style="--d:<%= i * 120 %>ms">
                         <div class="w-32 h-32 md:w-40 md:h-40 rounded-full p-1.5 avatar-ring mx-auto mb-4 overflow-hidden"><%- avatar(p, 'w-full h-full group-hover:scale-110 transition-transform duration-500 text-3xl') %></div>
                         <h4 class="text-lg md:text-2xl font-bold text-ink"><%= p.name %></h4>
                         <p class="text-xs md:text-sm text-brand font-extrabold uppercase tracking-wider mt-1"><%= p.role %></p>
@@ -142,23 +152,52 @@
             <% } %>
 
             <% sponsors.forEach((p) => { %>
-                <div class="mt-12 inline-flex items-center gap-5 glass-card rounded-3xl px-6 py-4 text-left">
+                <div class="mt-12 inline-flex items-center gap-5 glass-card rounded-3xl px-6 py-4 text-left member" data-reveal="toggle">
                     <%- avatar(p, 'w-16 h-16 md:w-20 md:h-20 text-xl') %>
                     <div><h4 class="font-bold text-ink text-base md:text-xl"><%= p.name %></h4><p class="text-[11px] md:text-sm text-brand font-extrabold uppercase tracking-wider mt-1"><%= p.role %></p></div>
                 </div>
             <% }) %>
 
-            <% if (board.length) { %>
-            <h3 class="mt-20 mb-10 text-lg font-tech text-ink-muted tracking-widest uppercase">Current Board</h3>
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto">
-                <% board.forEach((p) => { %>
-                    <div class="glass-card card-hover rounded-3xl p-5 md:p-6">
-                        <div class="mb-4"><%- avatar(p, 'w-16 h-16 md:w-24 md:h-24 mx-auto text-xl md:text-2xl') %></div>
-                        <h4 class="font-bold text-ink text-sm md:text-lg"><%= p.name %></h4>
-                        <p class="text-[11px] md:text-xs text-ink-muted font-bold uppercase mt-1"><%= p.role %></p>
-                    </div>
-                <% }) %>
-            </div>
+            <% if (revealOn && revealRoles.length) { %>
+                <div class="mt-20" data-reveal>
+                    <span class="reveal-chip"><i class="fas fa-lock"></i> Revealing soon</span>
+                    <h3 class="mt-4 text-2xl md:text-3xl font-black text-ink"><%= s.board_reveal_title || 'The new board is being chosen' %></h3>
+                    <p class="mt-2 text-ink-muted"><%= revealDate ? `Names drop on ${revealDate}.` : 'The seats are set. The names drop soon.' %> Follow <a class="text-brand font-semibold" href="<%= s.instagram_url || s.facebook_url || '#' %>" target="_blank" rel="noopener">our pages</a> so you don't miss it.</p>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto mt-10">
+                    <% revealRoles.forEach((role, i) => { %>
+                        <div class="glass-card rounded-3xl p-5 md:p-6 mystery-card" data-reveal="toggle" data-tilt style="--d:<%= (i % 4) * 80 %>ms">
+                            <div class="mystery-avatar w-16 h-16 md:w-24 md:h-24 mx-auto mb-4"><i class="fas fa-question"></i></div>
+                            <div class="mystery-name mx-auto" aria-hidden="true"></div>
+                            <p class="text-[11px] md:text-xs text-brand font-extrabold uppercase tracking-wider mt-3"><%= role %></p>
+                            <span class="sr-only">To be announced</span>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } else if (board.length) { %>
+                <h3 class="mt-20 mb-10 text-lg font-tech text-ink-muted tracking-widest uppercase" data-reveal>Current Board</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto">
+                    <% board.forEach((p, i) => { %>
+                        <div class="glass-card card-hover rounded-3xl p-5 md:p-6 member" data-reveal="toggle" style="--d:<%= (i % 4) * 80 %>ms">
+                            <div class="mb-4"><%- avatar(p, 'w-16 h-16 md:w-24 md:h-24 mx-auto text-xl md:text-2xl') %></div>
+                            <h4 class="font-bold text-ink text-sm md:text-lg"><%= p.name %></h4>
+                            <p class="text-[11px] md:text-xs text-ink-muted font-bold uppercase mt-1"><%= p.role %></p>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+
+            <% if (advisors.length) { %>
+                <h3 class="mt-20 mb-3 text-lg font-tech text-ink-muted tracking-widest uppercase" data-reveal>Advisory Board</h3>
+                <p class="text-ink-muted mb-8" data-reveal>The founding board, still here to guide the new team.</p>
+                <div class="flex flex-wrap justify-center gap-3 md:gap-4 max-w-5xl mx-auto">
+                    <% advisors.forEach((p, i) => { %>
+                        <div class="glass-card rounded-2xl pl-2 pr-5 py-2 flex items-center gap-3 text-left member" data-reveal="toggle" style="--d:<%= (i % 6) * 60 %>ms">
+                            <%- avatar(p, 'w-11 h-11 text-sm') %>
+                            <div><div class="font-bold text-ink text-sm"><%= p.name %></div><div class="text-[11px] text-ink-muted font-semibold uppercase"><%= p.role %></div></div>
+                        </div>
+                    <% }) %>
+                </div>
             <% } %>
         </div>
     </section>
@@ -166,7 +205,7 @@
     <!-- JOIN -->
     <section id="join" class="py-24 md:py-28" data-section="join">
         <div class="container mx-auto px-6">
-            <div class="join-panel rounded-[2.5rem] p-8 md:p-14 grid md:grid-cols-2 gap-10 items-center max-w-5xl mx-auto">
+            <div class="join-panel rounded-[2.5rem] p-8 md:p-14 grid md:grid-cols-2 gap-10 items-center max-w-5xl mx-auto" data-reveal>
                 <div>
                     <p class="section-kicker !text-cyan-200">Membership</p>
                     <h2 class="text-3xl md:text-5xl font-black text-white leading-tight">Your seat in ACM Sinai is waiting.</h2>

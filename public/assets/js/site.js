@@ -140,12 +140,114 @@
     });
   }
 
-  // ---------- Particle sphere background ----------
+  // ---------- Scroll reveal (cards appear and disappear as you scroll) ----------
+  var revealEls = document.querySelectorAll('[data-reveal]');
+  if ('IntersectionObserver' in window && revealEls.length) {
+    var settleTimers = new WeakMap();
+    var rio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        var el = en.target;
+        clearTimeout(settleTimers.get(el));
+        if (en.isIntersecting) {
+          el.classList.remove('is-out-up');
+          el.classList.add('is-in');
+          var d = parseInt(getComputedStyle(el).getPropertyValue('--d'), 10) || 0;
+          settleTimers.set(el, setTimeout(function () { el.classList.add('settled'); }, d + 850));
+          countUp(el);
+          if (el.getAttribute('data-reveal') !== 'toggle') rio.unobserve(el);
+        } else if (el.classList.contains('is-in')) {
+          el.classList.remove('is-in', 'settled');
+          // Left through the top: lift away. Left through the bottom: sink back to the start pose.
+          el.classList.toggle('is-out-up', en.boundingClientRect.top < 0);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    revealEls.forEach(function (el) { rio.observe(el); });
+  }
+
+  function countUp(scope) {
+    scope.querySelectorAll('[data-count]:not([data-counted])').forEach(function (n) {
+      n.setAttribute('data-counted', '1');
+      var end = +n.getAttribute('data-count'), from = end > 1000 ? end - 80 : 0, t0 = null;
+      function step(t) {
+        if (!t0) t0 = t;
+        var k = Math.min(1, (t - t0) / 1400), e = 1 - Math.pow(1 - k, 3);
+        n.textContent = Math.round(from + (end - from) * e);
+        if (k < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  // ---------- Hover tilt (mouse only) ----------
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    document.querySelectorAll('[data-tilt]').forEach(function (el) {
+      el.addEventListener('pointermove', function (e) {
+        var r = el.getBoundingClientRect();
+        var x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+        el.classList.add('tilting');
+        el.style.transform = 'perspective(900px) rotateX(' + (-y * 8).toFixed(2) + 'deg) rotateY(' + (x * 10).toFixed(2) + 'deg) translateY(-8px)';
+      });
+      el.addEventListener('pointerleave', function () { el.classList.remove('tilting'); el.style.transform = ''; });
+    });
+  }
+
+  // ---------- Tracks rail: arrows, drag, gentle auto-scroll ----------
+  document.querySelectorAll('[data-rail]').forEach(function (rail) {
+    var track = rail.querySelector('[data-rail-track]');
+    var prev = rail.querySelector('[data-rail-prev]'), next = rail.querySelector('[data-rail-next]');
+    if (!track) return;
+    function stepSize() { var c = track.querySelector('a'); return c ? c.getBoundingClientRect().width + parseFloat(getComputedStyle(track).columnGap || 32) : 320; }
+    function atEnd() { return track.scrollLeft + track.clientWidth >= track.scrollWidth - 8; }
+    function update() { if (prev) prev.disabled = track.scrollLeft < 8; if (next) next.disabled = atEnd(); }
+    var pausedUntil = 0;
+    function pause() { pausedUntil = Date.now() + 8000; }
+    if (prev) prev.addEventListener('click', function () { track.scrollBy({ left: -stepSize() }); pause(); });
+    if (next) next.addEventListener('click', function () { track.scrollBy({ left: stepSize() }); pause(); });
+    track.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+
+    // Drag to scroll with a mouse (touch already swipes natively).
+    var down = false, sx = 0, sl = 0, moved = 0;
+    track.addEventListener('pointerdown', function (e) {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      down = true; moved = 0; sx = e.clientX; sl = track.scrollLeft;
+    });
+    window.addEventListener('pointermove', function (e) {
+      if (!down) return;
+      var dx = e.clientX - sx; moved = Math.max(moved, Math.abs(dx));
+      if (moved > 6) { track.classList.add('dragging'); track.scrollLeft = sl - dx; }
+    });
+    window.addEventListener('pointerup', function () {
+      if (!down) return;
+      down = false;
+      if (track.classList.contains('dragging')) {
+        track.classList.remove('dragging');
+        var s = stepSize(); track.scrollTo({ left: Math.round(track.scrollLeft / s) * s });
+        pause();
+      }
+    });
+    track.addEventListener('click', function (e) { if (moved > 6) { e.preventDefault(); moved = 0; } }, true);
+
+    // Auto-advance slowly while visible; stops while the visitor is using it.
+    var hover = false, visible = false;
+    rail.addEventListener('mouseenter', function () { hover = true; });
+    rail.addEventListener('mouseleave', function () { hover = false; });
+    track.addEventListener('touchstart', pause, { passive: true });
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }, { threshold: 0.5 }).observe(track);
+    setInterval(function () {
+      if (!visible || hover || down || document.hidden || Date.now() < pausedUntil) return;
+      if (atEnd()) track.scrollTo({ left: 0 }); else track.scrollBy({ left: stepSize() });
+    }, 4200);
+  });
+
+  // ---------- Particle sphere background (interactive) ----------
   function startSphere() {
     var THREE = window.THREE;
     var container = document.getElementById('canvas-container');
-    if (!THREE || !container) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!THREE || !container || container.firstChild) return;
+    var calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     var small = window.innerWidth < 768;
     var scene = new THREE.Scene();
@@ -164,10 +266,12 @@
     var dot = new THREE.CanvasTexture(c);
 
     var count = small ? 900 : 1500;
-    var pos = new Float32Array(count * 3);
+    var base = new Float32Array(count * 3), pos = new Float32Array(count * 3), push = new Float32Array(count);
     for (var i = 0; i < count * 3; i += 3) {
       var r = 7 + (Math.random() - 0.5), th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
-      pos[i] = r * Math.sin(ph) * Math.cos(th); pos[i + 1] = r * Math.sin(ph) * Math.sin(th); pos[i + 2] = r * Math.cos(ph);
+      base[i] = pos[i] = r * Math.sin(ph) * Math.cos(th);
+      base[i + 1] = pos[i + 1] = r * Math.sin(ph) * Math.sin(th);
+      base[i + 2] = pos[i + 2] = r * Math.cos(ph);
     }
     var sGeo = new THREE.BufferGeometry(); sGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     var sMat = new THREE.PointsMaterial({ size: small ? 0.13 : 0.1, map: dot, transparent: true, depthWrite: false });
@@ -187,7 +291,7 @@
         tMat.color.setHex(0xffffff); tMat.opacity = 0.3;
       } else {
         // Softer on light backgrounds so it does not compete with the text.
-        sMat.blending = THREE.NormalBlending; sMat.color.setHex(0x3b82f6); sMat.opacity = 0.35;
+        sMat.blending = THREE.NormalBlending; sMat.color.setHex(0x3b82f6); sMat.opacity = 0.4;
         tMat.color.setHex(0x64748b); tMat.opacity = 0.25;
       }
       sMat.needsUpdate = true; tMat.needsUpdate = true;
@@ -195,16 +299,50 @@
     applyTheme(root.classList.contains('dark'));
     onThemeChange.push(applyTheme);
 
-    var mx = 0, my = 0;
-    document.addEventListener('mousemove', function (e) { mx = (e.clientX / window.innerWidth) * 2 - 1; my = -(e.clientY / window.innerHeight) * 2 + 1; }, { passive: true });
+    // Pointer: the sphere leans toward the cursor and the dots under it bulge outward.
+    // A click on empty space sends a ripple; scrolling spins it.
+    var mx = 0, my = 0, tx = 0, ty = 0, active = 0, pulse = 0, spin = 0, lastY = window.scrollY;
+    function point(x, y) { mx = (x / window.innerWidth) * 2 - 1; my = -(y / window.innerHeight) * 2 + 1; active = 1; }
+    document.addEventListener('pointermove', function (e) { point(e.clientX, e.clientY); }, { passive: true });
+    document.addEventListener('touchmove', function (e) { if (e.touches[0]) point(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+    document.addEventListener('pointerdown', function (e) {
+      if (e.target.closest('a,button,input,textarea,select,label,.glass-card')) return;
+      pulse = 1; point(e.clientX, e.clientY);
+    });
+    window.addEventListener('scroll', function () { var y = window.scrollY; spin += (y - lastY) * 0.00012; lastY = y; }, { passive: true });
+
+    var dir = new THREE.Vector3(), inv = new THREE.Quaternion();
     var clock = new THREE.Clock();
     var running = true;
-    document.addEventListener('visibilitychange', function () { running = !document.hidden; if (running) requestAnimationFrame(loop); });
+    document.addEventListener('visibilitychange', function () { running = !document.hidden; if (running) { clock.getDelta(); requestAnimationFrame(loop); } });
+    var speed = calm ? 0.5 : 1, rotY = 0;
     function loop() {
       if (!running) return;
-      var t = clock.getElapsedTime();
-      sphere.rotation.y = t * 0.1 + mx * 0.05; sphere.rotation.x = t * 0.02 + my * 0.05;
-      stars.rotation.y = -t * 0.02;
+      var dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
+      tx += (mx - tx) * 0.06; ty += (my - ty) * 0.06;
+      spin *= 0.94;
+      rotY += 0.1 * speed * dt + spin;
+      sphere.rotation.y = rotY + tx * 0.6;
+      sphere.rotation.x = t * 0.02 * speed - ty * 0.45;
+      stars.rotation.y = -t * 0.02 * speed + tx * 0.08;
+      stars.rotation.x = ty * 0.05;
+      active *= 0.99; pulse *= 0.93;
+
+      // Cursor direction in the sphere's own space.
+      dir.set(tx * 7, ty * 5, 6).normalize();
+      inv.copy(sphere.quaternion).invert();
+      dir.applyQuaternion(inv);
+      var wave = calm ? 0.02 : 0.045;
+      for (var k = 0, p = 0; k < count; k++, p += 3) {
+        var bx = base[p], by = base[p + 1], bz = base[p + 2];
+        var d = (bx * dir.x + by * dir.y + bz * dir.z) / 7;
+        var target = d > 0.8 ? (d - 0.8) * 5 * active : 0;
+        push[k] += (target - push[k]) * 0.12;
+        var s = 1 + push[k] * 0.35 + Math.sin(t * 1.4 + by * 0.7 + bx * 0.3) * wave + pulse * 0.25 * (0.6 + 0.4 * Math.sin(k));
+        pos[p] = bx * s; pos[p + 1] = by * s; pos[p + 2] = bz * s;
+      }
+      sGeo.attributes.position.needsUpdate = true;
+      sMat.size = (small ? 0.13 : 0.1) * (1 + pulse * 0.6);
       renderer.render(scene, camera);
       requestAnimationFrame(loop);
     }

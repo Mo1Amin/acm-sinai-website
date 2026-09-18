@@ -14,11 +14,11 @@ router.use(wrap(async (req, res, next) => {
 }));
 
 router.get('/', wrap(async (req, res) => {
-  const [tracks, events, albums, founders, sponsors, board] = await Promise.all([
+  const [tracks, events, albums, founders, sponsors, board, advisors] = await Promise.all([
     content.tracks(), content.events(), content.albums(),
-    content.people('founder'), content.people('sponsor'), content.people('board'),
+    content.people('founder'), content.people('sponsor'), content.people('board'), content.people('advisor'),
   ]);
-  res.render('site/home', { pageTitle: res.locals.settings.site_title, canonicalPath: '/', isHome: true, tracks, events, albums, founders, sponsors, board });
+  res.render('site/home', { pageTitle: res.locals.settings.site_title, canonicalPath: '/', isHome: true, tracks, events, albums, founders, sponsors, board, advisors });
 }));
 
 // Old query-string link keeps working.

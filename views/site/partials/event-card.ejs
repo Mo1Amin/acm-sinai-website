@@ -1,4 +1,4 @@
-<article class="glass-card card-hover rounded-[2rem] overflow-hidden group flex flex-col h-full">
+<article class="glass-card card-hover rounded-[2rem] overflow-hidden group flex flex-col h-full" data-reveal="toggle" style="--d:<%= ((typeof i === 'number' ? i : 0) % 3) * 90 %>ms">
     <div class="relative aspect-video overflow-hidden bg-surface-2">
         <% if (ev.image) { %>
             <img src="<%= asset(ev.image) %>" alt="<%= ev.title %>" width="900" height="506" loading="lazy" class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700">

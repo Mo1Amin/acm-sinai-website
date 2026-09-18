@@ -29,6 +29,14 @@
             <div><label class="admin-label" for="registration_url">Registration form link</label><input class="admin-input" id="registration_url" name="registration_url" type="url" maxlength="500" value="<%= values.registration_url || '' %>"></div>
             <p class="admin-help -mt-2">When closed, the site shows "Registration opens soon".</p>
         </section>
+        <section class="admin-card flex flex-col gap-4">
+            <h2 class="font-bold text-ink">New board teaser</h2>
+            <label class="flex items-center gap-3 font-semibold text-ink"><input type="checkbox" name="board_reveal" value="1" class="w-5 h-5" <%= values.board_reveal === '1' ? 'checked' : '' %>> Show "revealing soon" seats</label>
+            <div><label class="admin-label" for="board_reveal_title">Teaser headline</label><input class="admin-input" id="board_reveal_title" name="board_reveal_title" maxlength="120" value="<%= values.board_reveal_title || '' %>"></div>
+            <div><label class="admin-label" for="board_reveal_roles">Seats to tease (one per line)</label><textarea class="admin-input min-h-[150px]" id="board_reveal_roles" name="board_reveal_roles" maxlength="1000"><%= values.board_reveal_roles || '' %></textarea></div>
+            <div><label class="admin-label" for="board_reveal_date">Announcement date (optional)</label><input class="admin-input" id="board_reveal_date" name="board_reveal_date" type="date" value="<%= values.board_reveal_date || '' %>"></div>
+            <p class="admin-help -mt-2">Turn it off once the new board is added under Team → Current board.</p>
+        </section>
         <section class="admin-card flex flex-col gap-3">
             <h2 class="font-bold text-ink">Analytics</h2>
             <label class="admin-label" for="analytics_retention_days">Keep visit data for (days)</label>
